@@ -1,0 +1,143 @@
+/**
+ * Self-Planning Travel Planner - Typography System
+ * Extracted from Figma Design
+ * All sizes in rem units (16px base = 1rem)
+ */
+
+:root {
+  /* ========================================
+     FONT SIZES (REM UNITS)
+     ======================================== */
+
+  /* Display & Hero Sizes */
+  --font-size-display: 6rem; /* 96px - Emoji icons, decorative large text */
+  --font-size-hero:clamp(2rem, 5vw, 3rem); /* 48px - Hero headings (e.g., "Welcome to Our Platform") */
+
+  /* Heading Sizes */
+
+  --font-size-h1: clamp(2rem, 1.5rem + 2vw, 2.5rem); /* ~32px → 40px */
+  --font-size-h2: clamp(1.5rem, 1.25rem + 1vw, 2rem); /* ~24px → 32px */
+  --font-size-h3: clamp(1.25rem, 1rem + 1vw, 1.5rem); /* ~20px → 24px */
+  --font-size-h4: clamp(0.82rem, 0.8rem + 0.5vw, 1.25rem); /* ~14px → 20px */
+  /* 20px - Section headers, feature titles, navigation */
+  --font-size-h5: 1.125rem; /* 18px - Large body text, form labels, emphasized content */
+  --font-size-h6: 1rem; /* 16px - Standard headings, labels */
+
+  /* Body Text Sizes */
+  --font-size-base: 1rem; /* 16px - Body text, form inputs, general content */
+  --font-size-sm: 0.82rem; /* 14px - Small text, table cells, callouts */
+  --font-size-xs: 0.75rem; /* 12px - Tiny text, helper text, "New page" */
+  --font-size-xxs: 0.625rem; /* 10px - Tags (e.g., "Roadtrip", "Citytrip") */
+}
+
+:root {
+  /* ========================================
+     LINE HEIGHTS
+     ======================================== */
+  --line-height-tight: 1; /* 100% - Compact headings, logos */
+  --line-height-snug: 1.2; /* 120% - Buttons, tags, compact text */
+  --line-height-normal: 1.5; /* 150% - Body text, forms, standard reading */
+  --line-height-relaxed: 1.625; /* 162% - Comfortable reading, descriptions */
+  --line-height-loose: 2; /* 200% - Extra spacious, tags with padding */
+}
+
+
+
+:root {
+  /* ========================================
+     FONT WEIGHTS
+     ======================================== */
+  --font-weight-regular: 400; /* Normal text */
+  --font-weight-medium: 500; /* Semi-bold, emphasis */
+  --font-weight-bold: 700; /* Bold headings, strong emphasis */
+}
+
+:root {
+  /* ========================================
+     FONT FAMILIES
+     ======================================== */
+  --font-family-primary: "Poppins", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --font-family-secondary: "Arial", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --font-family-mono: "Monaco", "Courier New", monospace;
+}
+
+/* ========================================
+   TYPOGRAPHY UTILITY CLASSES
+   ======================================== */
+
+/* Display & Hero */
+.text-display {
+  font-size: var(--font-size-display);
+  line-height: var(--line-height-tight);
+  font-weight: var(--font-weight-regular);
+}
+
+.text-hero {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-hero);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+/* Headings */
+
+
+/* ========================================
+   COMPONENT-SPECIFIC TYPOGRAPHY
+   ======================================== */
+
+/* Logo */
+
+/* ========================================
+   USAGE EXAMPLES
+   ======================================== */
+/*
+  Basic Usage:
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
+    font-family: var(--font-family-primary);
+  
+  Using Utility Classes:
+    <h1 class="text-h1">Heading</h1>
+    <p class="text-base">Body text</p>
+    <button class="button-text">Click me</button>
+  
+  Complete Button Example:
+    .my-button {
+      font-family: var(--font-family-primary);
+      font-size: var(--font-size-h3);
+      font-weight: var(--font-weight-medium);
+      line-height: var(--line-height-tight);
+      letter-spacing: var(--letter-spacing-normal);
+    }
+  
+  Complete Hero Heading:
+    .hero-heading {
+      font-family: var(--font-family-primary);
+      font-size: var(--font-size-hero);
+      font-weight: var(--font-weight-bold);
+      line-height: var(--line-height-tight);
+      letter-spacing: var(--letter-spacing-wide);
+    }
+  
+  Card Title:
+    .trip-card-title {
+      font-family: var(--font-family-primary);
+      font-size: var(--font-size-h4);
+      font-weight: var(--font-weight-medium);
+      line-height: var(--line-height-snug);
+      text-align: center;
+    }
+  
+  Tag (Roadtrip/Citytrip):
+    .tag-style {
+      font-family: var(--font-family-primary);
+      font-size: var(--font-size-xxs);
+      font-weight: var(--font-weight-regular);
+      line-height: var(--line-height-loose);
+    }
+*/
