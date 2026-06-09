@@ -1,16 +1,39 @@
-# React + Vite
+# Self-Planning Travel Planner
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The Self-Planning Travel Planner is an all-in-one digital companion designed to streamline your travel preparation. Stop juggling spreadsheets, notes, and separate apps—this platform consolidates everything from to-do lists and itineraries to budget tracking and packing lists into one unified, intuitive interface.
 
-Currently, two official plugins are available:
+## 🚀 Features
+- **Interactive Trip Dashboard:** Manage all your visiting, upcoming, and past trips in one place.
+- **Detailed Trip Modals:** Organize destinations, travel dates, transport, accommodation, and activities.
+- **To-Do & Packing Lists:** Seamlessly track tasks, add priorities, and ensure nothing is forgotten.
+- **Financial Tracker:** Stay on budget with built-in expense categorization and real-time balance calculations.
+- **Secure Authentication:** Built-in routing protection and mocked session management for user accounts.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🛠️ Tech Stack
+- **Frontend:** React 19, React Router v7
+- **Styling:** Tailwind CSS v4
+- **Build Tool:** Vite v7
+- **Future Backend:** PHP (API integration planned)
 
-## React Compiler
+## 📖 The Project Journey
+This repository is the culmination of multiple iterations, learning phases, and architectural upgrades. To read the full story of how this application evolved from a simple Term 1 class project into a modern React application, please read the [PROJECT_JOURNEY.md](./PROJECT_JOURNEY.md).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 💻 Getting Started
+### Prerequisites
+- Node.js (v18+)
+- npm or yarn
 
-## Expanding the ESLint configuration
+### Installation
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 👨‍💻 Developers
+- **Thang Saoly** - Web Developer / React Migration Lead
+- **Tiek Chhunhour** - Web Developer / Original Co-Creator
