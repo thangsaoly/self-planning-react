@@ -122,23 +122,46 @@ const typeColors = {
     Hiking: "bg-[color:var(--color-tag-hiking)]",
 };
 
-function TripCard({ trip, onClick }) {
+function TripCard({ trip, onClick, sectionType, onDragStart }) {
+    const totalTasks = (trip.todos?.length || 0) + (trip.packing?.length || 0);
+    const completedTasks = (trip.todos?.filter(t => t.isDone).length || 0) + (trip.packing?.filter(p => p.isPacked).length || 0);
+    const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
     return (
         <div
+            draggable
+            onDragStart={(e) => onDragStart(e, trip, sectionType)}
             onClick={onClick}
-            className="card flex-shrink-0 flex flex-col items-start bg-[color:var(--color-bg-card)] rounded-[10px] shadow-md scale-95 hover:scale-100 transition-all duration-300 cursor-pointer"
+            className="card flex-shrink-0 flex flex-col items-start bg-[color:var(--color-bg-card)] rounded-[10px] shadow-md scale-95 hover:scale-100 transition-all duration-300 cursor-grab active:cursor-grabbing relative overflow-hidden"
         >
-            <div className="img w-[280px] h-[150px] overflow-hidden">
+            <div className="img w-[280px] h-[150px] overflow-hidden pointer-events-none">
                 <img
                     src={trip.image}
                     alt={trip.name}
                     className="w-[280px] h-[150px] object-cover rounded-t-[10px]"
                 />
             </div>
-            <div className="info flex flex-col p-2.5 gap-1.5">
-                <span className="text-[color:var(--color-text-primary)]">
-                    {trip.emoji} {trip.name}
-                </span>
+            {/* Progress Bar overlay at bottom of image */}
+            {totalTasks > 0 && (
+                <div className="absolute top-[146px] left-0 w-full h-1 bg-black/20">
+                    <div 
+                        className="h-full bg-[color:var(--color-primary-blue)] transition-all duration-500" 
+                        style={{ width: `${progress}%` }} 
+                    />
+                </div>
+            )}
+            
+            <div className="info flex flex-col p-2.5 gap-1.5 w-full pointer-events-none">
+                <div className="flex justify-between items-center w-full">
+                    <span className="text-[color:var(--color-text-primary)] font-medium truncate">
+                        {trip.emoji} {trip.name}
+                    </span>
+                    {totalTasks > 0 && (
+                        <span className="text-[10px] text-[color:var(--color-text-secondary)] font-medium">
+                            {progress}%
+                        </span>
+                    )}
+                </div>
                 <div
                     className={`travel-type flex items-center px-2.5 py-1 rounded-[10px] w-fit text-xs text-[color:var(--color-text-primary)] ${typeColors[trip.typeClass] || "bg-[color:var(--color-primary-blue)]"}`}
                 >
@@ -180,7 +203,7 @@ const filterOptions = [
     { value: "Hiking", label: "🥾 Hiking" },
 ];
 
-function TripSection({ icon, title, trips, onNewPlan, onTripClick }) {
+function TripSection({ icon, title, trips, sectionType, onNewPlan, onTripClick, onDragStart, onDrop }) {
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [filterType, setFilterType] = useState("all");
@@ -242,8 +265,31 @@ function TripSection({ icon, title, trips, onNewPlan, onTripClick }) {
 
     const hasActiveFilters = searchQuery || filterType !== "all" || sortOrder !== "default";
 
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        e.currentTarget.classList.add("bg-[color:var(--color-bg-card)]");
+        e.currentTarget.classList.add("scale-[1.01]");
+    };
+
+    const handleDragLeave = (e) => {
+        e.currentTarget.classList.remove("bg-[color:var(--color-bg-card)]");
+        e.currentTarget.classList.remove("scale-[1.01]");
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.currentTarget.classList.remove("bg-[color:var(--color-bg-card)]");
+        e.currentTarget.classList.remove("scale-[1.01]");
+        onDrop(e, sectionType);
+    };
+
     return (
-        <div className="container flex flex-col justify-center items-start bg-[color:var(--color-bg-secondary)] rounded-[15px] shadow-lg w-[90%] p-7 gap-5">
+        <div 
+            className="container flex flex-col justify-center items-start bg-[color:var(--color-bg-secondary)] rounded-[15px] shadow-lg w-[90%] p-7 gap-5 transition-all duration-300 border-2 border-transparent"
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+        >
             <div className="event-box flex justify-between items-center w-full">
                 <div className="event flex items-center p-2.5 gap-2.5 bg-[color:var(--color-bg-card)] rounded-[10px] shadow-md">
                     <img src={icon} alt="icon" width={32} height={32} />
@@ -348,11 +394,18 @@ function TripSection({ icon, title, trips, onNewPlan, onTripClick }) {
             <div className="card-box flex flex-nowrap gap-5 overflow-x-auto overflow-y-hidden w-full max-w-full rounded-[10px] pb-2 scrollbar-hide">
                 {processedTrips.length > 0 ? (
                     processedTrips.map((trip) => (
-                        <TripCard key={trip.name} trip={trip} onClick={() => onTripClick(trip)} />
+                        <TripCard key={trip.id} trip={trip} onClick={() => onTripClick(trip)} sectionType={sectionType} onDragStart={onDragStart} />
                     ))
                 ) : (
-                    <div className="flex items-center justify-center w-full py-8 text-[color:var(--color-text-muted)]">
-                        <span>No trips found matching your criteria</span>
+                    <div className="flex flex-col items-center justify-center w-full py-8 gap-3 min-w-[280px]">
+                        <img 
+                            src={icon} 
+                            alt="Empty state" 
+                            className="w-16 h-16 opacity-50 grayscale" 
+                        />
+                        <span className="text-[color:var(--color-text-muted)] text-sm">
+                            {searchQuery ? "No trips matching your criteria" : "No trips here yet. Click + New Plan to start!"}
+                        </span>
                     </div>
                 )}
                 <NewPlanCard onClick={onNewPlan} />
@@ -361,7 +414,10 @@ function TripSection({ icon, title, trips, onNewPlan, onTripClick }) {
     );
 }
 
+import { useToast } from "../context/ToastContext";
+
 export default function DashboardPage() {
+    const { addToast } = useToast();
     const [visitingTrips, setVisitingTrips] = useState(() => {
         const saved = localStorage.getItem("visitingTrips");
         return saved ? JSON.parse(saved) : initialVisitingTrips;
@@ -465,16 +521,44 @@ export default function DashboardPage() {
 
     const handleTripDelete = (trip, section) => {
         switch (section) {
-            case "visiting":
-                setVisitingTrips((prev) => prev.filter((t) => t.id !== trip.id));
-                break;
-            case "upcoming":
-                setUpcomingTrips((prev) => prev.filter((t) => t.id !== trip.id));
-                break;
-            case "visited":
-                setVisitedTrips((prev) => prev.filter((t) => t.id !== trip.id));
-                break;
+            case "visiting": setVisitingTrips((prev) => prev.filter((t) => t.id !== trip.id)); break;
+            case "upcoming": setUpcomingTrips((prev) => prev.filter((t) => t.id !== trip.id)); break;
+            case "visited": setVisitedTrips((prev) => prev.filter((t) => t.id !== trip.id)); break;
         }
+        addToast(`Deleted ${trip.name} successfully`, "info");
+    };
+
+    const handleDragStart = (e, trip, sourceSection) => {
+        e.dataTransfer.setData("tripId", trip.id);
+        e.dataTransfer.setData("sourceSection", sourceSection);
+    };
+
+    const handleDrop = (e, targetSection) => {
+        const tripId = e.dataTransfer.getData("tripId");
+        const sourceSection = e.dataTransfer.getData("sourceSection");
+        
+        if (sourceSection === targetSection || !tripId) return;
+
+        let tripToMove = null;
+        
+        // Remove from source
+        const removeFromSource = (setSection, trips) => {
+            tripToMove = trips.find(t => t.id === tripId);
+            if (tripToMove) setSection(prev => prev.filter(t => t.id !== tripId));
+        };
+
+        if (sourceSection === "visiting") removeFromSource(setVisitingTrips, visitingTrips);
+        else if (sourceSection === "upcoming") removeFromSource(setUpcomingTrips, upcomingTrips);
+        else if (sourceSection === "visited") removeFromSource(setVisitedTrips, visitedTrips);
+
+        if (!tripToMove) return;
+
+        // Add to target
+        if (targetSection === "visiting") setVisitingTrips(prev => [...prev, tripToMove]);
+        else if (targetSection === "upcoming") setUpcomingTrips(prev => [...prev, tripToMove]);
+        else if (targetSection === "visited") setVisitedTrips(prev => [...prev, tripToMove]);
+
+        addToast(`Moved ${tripToMove.name} to ${targetSection}`, "success");
     };
 
     const handleNewPlanSubmit = (cardData, status) => {
@@ -535,8 +619,11 @@ export default function DashboardPage() {
                         icon="https://cdn-icons-png.flaticon.com/128/1692/1692037.png"
                         title="Visiting"
                         trips={visitingTrips}
+                        sectionType="visiting"
                         onNewPlan={() => handleNewPlanClick("visiting")}
                         onTripClick={(trip) => handleTripClick(trip, "visiting")}
+                        onDragStart={handleDragStart}
+                        onDrop={handleDrop}
                     />
 
                     {/* Upcoming Holidays Section */}
@@ -544,8 +631,11 @@ export default function DashboardPage() {
                         icon="https://cdn-icons-png.flaticon.com/128/6381/6381403.png"
                         title="Upcoming Holidays"
                         trips={upcomingTrips}
+                        sectionType="upcoming"
                         onNewPlan={() => handleNewPlanClick("upcoming")}
                         onTripClick={(trip) => handleTripClick(trip, "upcoming")}
+                        onDragStart={handleDragStart}
+                        onDrop={handleDrop}
                     />
 
                     {/* Visited Section */}
@@ -553,8 +643,11 @@ export default function DashboardPage() {
                         icon="https://cdn-icons-png.flaticon.com/128/4698/4698094.png"
                         title="Visited"
                         trips={visitedTrips}
+                        sectionType="visited"
                         onNewPlan={() => handleNewPlanClick("visited")}
                         onTripClick={(trip) => handleTripClick(trip, "visited")}
+                        onDragStart={handleDragStart}
+                        onDrop={handleDrop}
                     />
                 </div>
             </div>

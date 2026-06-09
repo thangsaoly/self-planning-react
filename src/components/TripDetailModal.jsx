@@ -88,6 +88,18 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
 
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+    const [expanded, setExpanded] = useState({
+        booking: true,
+        transport: true,
+        map: true,
+        highlights: true,
+        packing: true,
+        costs: true
+    });
+
+    const toggleSection = (section) => setExpanded(prev => ({ ...prev, [section]: !prev[section] }));
 
     // Initialize form with trip data when modal opens
     useEffect(() => {
@@ -279,6 +291,62 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
         return costs.reduce((sum, c) => sum + (c.amount || 0), 0);
     };
 
+    const renderBudgetChart = () => {
+        const total = calculateTotal();
+        if (costs.length === 0) return null;
+
+        const colors = [
+            "var(--color-primary-blue)", 
+            "#4ade80", 
+            "#f472b6", 
+            "#fbbf24", 
+            "#a78bfa", 
+            "#f87171", 
+            "#2dd4bf"
+        ];
+        
+        return (
+            <div className="flex flex-col gap-3 mb-4 p-4 bg-[color:var(--color-bg-primary)] rounded-lg border border-[color:var(--color-border-secondary)]">
+                <h3 className="text-sm font-medium text-[color:var(--color-text-secondary)]">Budget Distribution</h3>
+                
+                {/* Horizontal Stacked Bar */}
+                <div className="w-full h-3 rounded-full flex overflow-hidden bg-[color:var(--color-bg-secondary)]">
+                    {total > 0 ? costs.map((c, i) => {
+                        const width = (c.amount / total) * 100;
+                        if (width === 0) return null;
+                        return (
+                            <div 
+                                key={i} 
+                                style={{ width: `${width}%`, backgroundColor: colors[i % colors.length] }} 
+                                title={`${c.name}: $${c.amount}`}
+                            />
+                        );
+                    }) : (
+                        <div className="w-full h-full bg-white/10" title="Add costs to see distribution" />
+                    )}
+                </div>
+                
+                {/* Legend */}
+                {total > 0 ? (
+                    <div className="flex flex-wrap gap-x-4 gap-y-2 mt-1">
+                        {costs.map((c, i) => {
+                            if (c.amount === 0) return null;
+                            return (
+                                <div key={i} className="flex items-center gap-1.5 text-xs">
+                                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colors[i % colors.length] }} />
+                                    <span className="text-[color:var(--color-text-secondary)]">{c.name}</span>
+                                    <span className="font-medium text-[color:var(--color-text-primary)]">{Math.round((c.amount/total)*100)}%</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <span className="text-xs text-[color:var(--color-text-muted)] mt-1">Enter costs in edit mode to see budget distribution</span>
+                )}
+            </div>
+        );
+    };
+
     // Transport handlers
     const addTransport = () => {
         setTransport((prev) => [...prev, { text: "" }]);
@@ -327,10 +395,13 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
     };
 
     const handleDelete = () => {
-        if (window.confirm(`Are you sure you want to delete "${trip.name}"?`)) {
-            onDelete(trip, section);
-            onClose();
-        }
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDelete = () => {
+        onDelete(trip, section);
+        setShowDeleteConfirm(false);
+        onClose();
     };
 
     const getDayCardClass = (index) => {
@@ -374,18 +445,34 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                     </div>
                     {/* Edit/Delete buttons overlay */}
                     <div className="absolute bottom-4 right-4 flex gap-2">
-                        {!isEditing ? (
+                        {showDeleteConfirm ? (
+                            <div className="flex items-center gap-2 bg-red-600 p-1.5 rounded-lg shadow-lg animate-fade-in">
+                                <span className="text-white text-sm font-medium px-2">Delete?</span>
+                                <button
+                                    onClick={confirmDelete}
+                                    className="px-3 py-1 bg-white text-red-600 hover:bg-red-50 rounded font-medium transition-colors text-sm"
+                                >
+                                    Yes
+                                </button>
+                                <button
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    className="px-3 py-1 bg-red-700 text-white hover:bg-red-800 rounded font-medium transition-colors text-sm"
+                                >
+                                    No
+                                </button>
+                            </div>
+                        ) : !isEditing ? (
                             <>
                                 <button
                                     onClick={() => setIsEditing(true)}
-                                    className="px-4 py-2 bg-[color:var(--color-primary-blue)] hover:bg-[color:var(--color-primary-blue-light)] text-white rounded-lg transition-colors flex items-center gap-2"
+                                    className="px-4 py-2 bg-[color:var(--color-primary-blue)] hover:bg-[color:var(--color-primary-blue-light)] text-white rounded-lg transition-colors flex items-center gap-2 shadow-md"
                                 >
                                     <i className="fi fi-rr-pencil" />
                                     Edit
                                 </button>
                                 <button
                                     onClick={handleDelete}
-                                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2"
+                                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2 shadow-md"
                                 >
                                     <i className="fi fi-rr-trash" />
                                     Delete
@@ -395,14 +482,14 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                             <>
                                 <button
                                     onClick={() => setIsEditing(false)}
-                                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors shadow-md"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleSave}
                                     disabled={isSaving}
-                                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 shadow-md"
                                 >
                                     {isSaving ? "Saving..." : "Save Changes"}
                                 </button>
@@ -414,22 +501,26 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                 {/* Main Content */}
                 <main className="relative mt-10 w-[90%] mx-auto pb-10">
                     {/* Title Section */}
-                    <section className="title-section mb-6">
-                        {isEditing ? (
-                            <input
-                                type="text"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleInputChange}
-                                placeholder="Destination name"
-                                className="text-[length:var(--font-size-h1)] font-bold bg-transparent border-b border-[color:var(--color-border-primary)] outline-none w-full text-[color:var(--color-text-primary)] placeholder:text-[color:var(--color-text-muted)]"
-                            />
-                        ) : (
-                            <h1 className="text-[length:var(--font-size-h1)] font-bold text-[color:var(--color-text-primary)]">
-                                {formData.name}
-                            </h1>
-                        )}
-                        <hr className="border-t border-[color:var(--color-border-secondary)] my-4" />
+                    <section className="title-section sticky top-0 z-[100] bg-[color:var(--color-bg-primary)] pt-4 pb-4 mb-6 shadow-[0_4px_6px_-6px_rgba(0,0,0,0.1)]">
+                        <div className="flex justify-between items-end">
+                            <div className="flex-1">
+                                {isEditing ? (
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleInputChange}
+                                        placeholder="Destination name"
+                                        className="text-[length:var(--font-size-h1)] font-bold bg-transparent border-b border-[color:var(--color-border-primary)] outline-none w-full text-[color:var(--color-text-primary)] placeholder:text-[color:var(--color-text-muted)]"
+                                    />
+                                ) : (
+                                    <h1 className="text-[length:var(--font-size-h1)] font-bold text-[color:var(--color-text-primary)] leading-tight">
+                                        {formData.name}
+                                    </h1>
+                                )}
+                            </div>
+                        </div>
+                        <hr className="border-t border-[color:var(--color-border-secondary)] mt-4 hidden" />
 
                         {/* Meta Info */}
                         <div className="meta-info flex flex-col gap-3 ml-6">
@@ -511,7 +602,7 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                                                 {isEditing ? (
                                                     <input type="text" value={activity.title} onChange={(e) => handleActivityChange(dayIndex, actIndex, e.target.value)} placeholder="Activity" className="bg-transparent border-none outline-none w-full text-sm" />
                                                 ) : (
-                                                    <span className={`activity-title text-sm ${activity.isDone ? "line-through opacity-60" : ""}`}>{activity.title}</span>
+                                                    <span className={`activity-title text-sm transition-all duration-300 ${activity.isDone ? "line-through opacity-60 text-[color:var(--color-text-muted)]" : ""}`}>{activity.title}</span>
                                                 )}
                                                 {isEditing && day.activities.length > 1 && (
                                                     <button onClick={() => removeActivity(dayIndex, actIndex)} className="text-xs ml-2 hover:text-red-400"><i className="fi fi-rr-cross" /></button>
@@ -542,9 +633,15 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                     <div className="grid-section grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         {/* Booking Details */}
-                        <section className="info-section booking bg-[color:var(--color-bg-secondary)] rounded-lg p-4">
-                            <h2 className="section-header flex items-center gap-2 text-lg font-medium mb-3">✈️ Booking Details</h2>
-                            <hr className="border-t border-[color:var(--color-border-secondary)] my-3" />
+                        <section className="info-section booking bg-[color:var(--color-bg-secondary)] rounded-lg p-4 transition-all">
+                            <div className="flex justify-between items-center cursor-pointer select-none" onClick={() => toggleSection('booking')}>
+                                <h2 className="section-header flex items-center gap-2 text-lg font-medium">✈️ Booking Details</h2>
+                                <i className={`fi fi-rr-angle-small-${expanded.booking ? 'up' : 'down'} text-xl transition-transform`} />
+                            </div>
+                            
+                            {expanded.booking && (
+                                <div className="mt-4 animate-fade-in flex flex-col gap-3">
+                                    <hr className="border-t border-[color:var(--color-border-secondary)] mb-3" />
 
                             <div className="info-callout bg-[color:var(--color-callout-bg)] rounded-lg p-3 mb-2">
                                 {isEditing ? (
@@ -560,12 +657,20 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                                     <div className="text-sm">🛬 {booking.arrival || "Arrival: Not set"}</div>
                                 )}
                             </div>
+                                </div>
+                            )}
                         </section>
 
                         {/* Transport Details */}
-                        <section className="info-section transport bg-[color:var(--color-bg-secondary)] rounded-lg p-4">
-                            <h2 className="section-header flex items-center gap-2 text-lg font-medium mb-3">🚗 Transport Details</h2>
-                            <hr className="border-t border-[color:var(--color-border-secondary)] my-3" />
+                        <section className="info-section transport bg-[color:var(--color-bg-secondary)] rounded-lg p-4 transition-all">
+                            <div className="flex justify-between items-center cursor-pointer select-none" onClick={() => toggleSection('transport')}>
+                                <h2 className="section-header flex items-center gap-2 text-lg font-medium">🚗 Transport Details</h2>
+                                <i className={`fi fi-rr-angle-small-${expanded.transport ? 'up' : 'down'} text-xl transition-transform`} />
+                            </div>
+
+                            {expanded.transport && (
+                                <div className="mt-4 animate-fade-in flex flex-col gap-2">
+                                    <hr className="border-t border-[color:var(--color-border-secondary)] mb-3" />
 
                             {transport.map((t, i) => (
                                 <div key={i} className="info-callout bg-[color:var(--color-callout-bg)] rounded-lg p-3 mb-2 flex items-center gap-2">
@@ -582,12 +687,20 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                             {isEditing && (
                                 <button onClick={addTransport} className="text-sm text-[color:var(--color-primary-blue)] hover:underline">+ Add transport</button>
                             )}
+                                </div>
+                            )}
                         </section>
 
                         {/* Google Maps */}
-                        <section className="info-section googleMap bg-[color:var(--color-bg-secondary)] rounded-lg p-4 md:col-span-2">
-                            <h2 className="section-header flex items-center gap-2 text-lg font-medium mb-3">🗺️ Google Maps</h2>
-                            <hr className="border-t border-[color:var(--color-border-secondary)] my-3" />
+                        <section className="info-section googleMap bg-[color:var(--color-bg-secondary)] rounded-lg p-4 md:col-span-2 transition-all">
+                            <div className="flex justify-between items-center cursor-pointer select-none" onClick={() => toggleSection('map')}>
+                                <h2 className="section-header flex items-center gap-2 text-lg font-medium">🗺️ Google Maps</h2>
+                                <i className={`fi fi-rr-angle-small-${expanded.map ? 'up' : 'down'} text-xl transition-transform`} />
+                            </div>
+
+                            {expanded.map && (
+                                <div className="mt-4 animate-fade-in">
+                                    <hr className="border-t border-[color:var(--color-border-secondary)] mb-3" />
 
                             <div className="info-callout bg-[color:var(--color-callout-bg)] rounded-lg p-3">
                                 {isEditing ? (
@@ -600,6 +713,8 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                                     )
                                 )}
                             </div>
+                                </div>
+                            )}
                         </section>
 
                         {/* To Do's */}
@@ -615,9 +730,15 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                         />
 
                         {/* Travel Highlights */}
-                        <section className="travel bg-[color:var(--color-bg-secondary)] rounded-lg p-4">
-                            <h2 className="section-header flex items-center gap-2 text-lg font-medium mb-3">⭐ Travel Highlights</h2>
-                            <hr className="border-t border-[color:var(--color-border-secondary)] my-3" />
+                        <section className="travel bg-[color:var(--color-bg-secondary)] rounded-lg p-4 transition-all">
+                            <div className="flex justify-between items-center cursor-pointer select-none" onClick={() => toggleSection('highlights')}>
+                                <h2 className="section-header flex items-center gap-2 text-lg font-medium">⭐ Travel Highlights</h2>
+                                <i className={`fi fi-rr-angle-small-${expanded.highlights ? 'up' : 'down'} text-xl transition-transform`} />
+                            </div>
+
+                            {expanded.highlights && (
+                                <div className="mt-4 animate-fade-in">
+                                    <hr className="border-t border-[color:var(--color-border-secondary)] mb-3" />
 
                             {isEditing && (
                                 <div className="callout-note mb-3">
@@ -646,12 +767,20 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                             {isEditing && (
                                 <button onClick={addHighlight} className="text-sm text-[color:var(--color-primary-blue)] hover:underline mt-2">+ Add highlight</button>
                             )}
+                                </div>
+                            )}
                         </section>
 
                         {/* Packing List */}
-                        <section className="packing-list bg-[color:var(--color-bg-secondary)] rounded-lg p-4">
-                            <h2 className="section-header flex items-center gap-2 text-lg font-medium mb-3">🎒 Packing List</h2>
-                            <hr className="border-t border-[color:var(--color-border-secondary)] my-3" />
+                        <section className="packing-list bg-[color:var(--color-bg-secondary)] rounded-lg p-4 transition-all">
+                            <div className="flex justify-between items-center cursor-pointer select-none" onClick={() => toggleSection('packing')}>
+                                <h2 className="section-header flex items-center gap-2 text-lg font-medium">🎒 Packing List</h2>
+                                <i className={`fi fi-rr-angle-small-${expanded.packing ? 'up' : 'down'} text-xl transition-transform`} />
+                            </div>
+
+                            {expanded.packing && (
+                                <div className="mt-4 animate-fade-in">
+                                    <hr className="border-t border-[color:var(--color-border-secondary)] mb-3" />
 
                             {isEditing && (
                                 <div className="callout-note mb-3">
@@ -671,19 +800,27 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                                             <button onClick={() => removePackingItem(i)} className="text-red-400 hover:text-red-600"><i className="fi fi-rr-cross text-xs" /></button>
                                         </>
                                     ) : (
-                                        <span className={`text-sm ${p.isPacked ? "line-through opacity-60" : ""}`}>{p.item}</span>
+                                        <span className={`text-sm transition-all duration-300 ${p.isPacked ? "line-through opacity-60 text-[color:var(--color-text-muted)]" : ""}`}>{p.item}</span>
                                     )}
                                 </div>
                             ))}
                             {isEditing && (
                                 <button onClick={addPackingItem} className="text-sm text-[color:var(--color-primary-blue)] hover:underline mt-2">+ Add item</button>
                             )}
+                                </div>
+                            )}
                         </section>
 
                         {/* Travel Costs */}
-                        <section className="travelCost bg-[color:var(--color-bg-secondary)] rounded-lg p-4">
-                            <h2 className="section-header flex items-center gap-2 text-lg font-medium mb-3">💸 Travel Costs</h2>
-                            <hr className="border-t border-[color:var(--color-border-secondary)] my-3" />
+                        <section className="travelCost bg-[color:var(--color-bg-secondary)] rounded-lg p-4 transition-all md:col-span-2">
+                            <div className="flex justify-between items-center cursor-pointer select-none" onClick={() => toggleSection('costs')}>
+                                <h2 className="section-header flex items-center gap-2 text-lg font-medium">💸 Travel Costs</h2>
+                                <i className={`fi fi-rr-angle-small-${expanded.costs ? 'up' : 'down'} text-xl transition-transform`} />
+                            </div>
+
+                            {expanded.costs && (
+                                <div className="mt-4 animate-fade-in">
+                                    <hr className="border-t border-[color:var(--color-border-secondary)] mb-3" />
 
                             {isEditing && (
                                 <div className="callout-note mb-3">
@@ -693,6 +830,8 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                             {costNote && !isEditing && (
                                 <div className="callout-note bg-[color:var(--color-callout-bg)] rounded-lg p-2 mb-3 text-sm italic">{costNote}</div>
                             )}
+
+                            {!isEditing && renderBudgetChart()}
 
                             <table className="cost-table w-full text-sm">
                                 <thead>
@@ -735,6 +874,8 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                             </table>
                             {isEditing && (
                                 <button onClick={addCost} className="text-sm text-[color:var(--color-primary-blue)] hover:underline mt-2">+ Add cost</button>
+                            )}
+                                </div>
                             )}
                         </section>
                     </div>

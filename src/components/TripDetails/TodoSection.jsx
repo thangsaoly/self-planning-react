@@ -1,12 +1,20 @@
+import { useState } from "react";
 
 export default function TodoSection({ todos, todoNote, isEditing, onToggle, onAdd, onUpdate, onRemove, onNoteChange }) {
+    const [isExpanded, setIsExpanded] = useState(true);
     const inputClasses = "w-full px-3 py-2 rounded bg-[color:var(--color-bg-secondary)] border-none text-[color:var(--color-text-primary)] outline-none placeholder:text-[color:var(--color-text-muted)]";
     const calloutClasses = "w-full px-3 py-2 rounded bg-[color:var(--color-callout-bg)] border border-[color:var(--color-callout-border)] text-[color:var(--color-text-primary)] outline-none placeholder:text-[color:var(--color-text-muted)] text-sm";
 
     return (
-        <section className="todo-list bg-[color:var(--color-bg-secondary)] rounded-lg p-4">
-            <h2 className="section-header flex items-center gap-2 text-lg font-medium mb-3">🎯 To Do's</h2>
-            <hr className="border-t border-[color:var(--color-border-secondary)] my-3" />
+        <section className="todo-list bg-[color:var(--color-bg-secondary)] rounded-lg p-4 transition-all">
+            <div className="flex justify-between items-center cursor-pointer select-none" onClick={() => setIsExpanded(!isExpanded)}>
+                <h2 className="section-header flex items-center gap-2 text-lg font-medium">🎯 To Do's</h2>
+                <i className={`fi fi-rr-angle-small-${isExpanded ? 'up' : 'down'} text-xl transition-transform`} />
+            </div>
+
+            {isExpanded && (
+                <div className="mt-4 animate-fade-in">
+                    <hr className="border-t border-[color:var(--color-border-secondary)] mb-3" />
 
             {isEditing && (
                 <div className="callout-note mb-3">
@@ -26,12 +34,14 @@ export default function TodoSection({ todos, todoNote, isEditing, onToggle, onAd
                             <button onClick={() => onRemove(i)} className="text-red-400 hover:text-red-600"><i className="fi fi-rr-cross text-xs" /></button>
                         </>
                     ) : (
-                        <span className={`text-sm ${todo.isDone ? "line-through opacity-60" : ""}`}>{todo.task}</span>
+                        <span className={`text-sm transition-all duration-300 ${todo.isDone ? "line-through opacity-60 text-[color:var(--color-text-muted)]" : ""}`}>{todo.task}</span>
                     )}
                 </div>
             ))}
             {isEditing && (
                 <button onClick={onAdd} className="text-sm text-[color:var(--color-primary-blue)] hover:underline mt-2">+ Add todo</button>
+            )}
+                </div>
             )}
         </section>
     );
