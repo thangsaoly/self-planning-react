@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import NewPlanModal from "../components/NewPlanModal";
 import TripDetailModal from "../components/TripDetailModal";
 import NavBar from "../components/NavBar";
@@ -189,7 +189,7 @@ function TripSection({ icon, title, trips, onNewPlan, onTripClick }) {
     const [isSortOpen, setIsSortOpen] = useState(false);
 
     // Process trips: filter, search, then sort
-    const processedTrips = React.useMemo(() => {
+    const processedTrips = useMemo(() => {
         let result = [...trips];
 
         // Apply type filter

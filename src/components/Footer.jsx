@@ -1,9 +1,8 @@
-import React from "react";
 import { Link, useLocation } from "react-router-dom";
 
 export default function Footer() {
-    const location = useLocation();
-    const isHome = location.pathname === "/";
+    const { pathname } = useLocation();
+    const isHome = pathname === "/";
 
     const featureHref = isHome ? "#features" : "/#features";
     const contactHref = isHome ? "#Contact" : "/#Contact";

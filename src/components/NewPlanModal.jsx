@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 const travelTypeOptions = [
     { value: "Citytrip", label: "Citytrip" },

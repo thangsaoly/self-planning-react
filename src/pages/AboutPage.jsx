@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import AuthModal from "../components/AuthModal";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
@@ -7,23 +7,8 @@ export default function AboutPage() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState("login");
 
-  const openLogin = () => {
-    setAuthMode("login");
-    setIsAuthOpen(true);
-  };
-
-  const openSignup = () => {
-    setAuthMode("signup");
-    setIsAuthOpen(true);
-  };
-
-  const closeAuth = () => {
-    setIsAuthOpen(false);
-  };
-
-  const handleSwitchMode = (mode) => {
-    setAuthMode(mode);
-  };
+  const openLogin = () => { setAuthMode("login"); setIsAuthOpen(true); };
+  const openSignup = () => { setAuthMode("signup"); setIsAuthOpen(true); };
 
   return (
     <div className="m-0 p-0 box-border font-['Poppins',sans-serif] bg-[color:var(--color-bg-primary)] min-h-screen text-[color:var(--color-text-primary)]">
@@ -111,7 +96,7 @@ export default function AboutPage() {
         <Footer />
       </div>
 
-      <AuthModal isOpen={isAuthOpen} mode={authMode} onClose={closeAuth} onSwitchMode={handleSwitchMode} />
+      <AuthModal isOpen={isAuthOpen} mode={authMode} onClose={() => setIsAuthOpen(false)} onSwitchMode={setAuthMode} />
     </div>
   );
 }

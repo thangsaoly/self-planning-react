@@ -1,14 +1,13 @@
-import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function NavBar({ onLoginClick, onSignupClick }) {
-    const location = useLocation();
+    const { pathname } = useLocation();
     const { user, logout } = useAuth();
 
-    const isHome = location.pathname === "/";
-    const isAbout = location.pathname.startsWith("/about");
-    const isDashboard = location.pathname.startsWith("/dashboard");
+    const isHome = pathname === "/";
+    const isAbout = pathname.startsWith("/about");
+    const isDashboard = pathname.startsWith("/dashboard");
 
     const showProfile = !!user;
     const userName = user ? user.name : "User";

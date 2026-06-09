@@ -1,4 +1,3 @@
-import React from "react";
 
 export default function TodoSection({ todos, todoNote, isEditing, onToggle, onAdd, onUpdate, onRemove, onNoteChange }) {
     const inputClasses = "w-full px-3 py-2 rounded bg-[color:var(--color-bg-secondary)] border-none text-[color:var(--color-text-primary)] outline-none placeholder:text-[color:var(--color-text-muted)]";
