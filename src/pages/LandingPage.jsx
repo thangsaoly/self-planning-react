@@ -1,14 +1,26 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import AuthModal from "../components/AuthModal";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 
 export default function LandingPage() {
+    const { user } = useAuth();
+    const navigate = useNavigate();
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [authMode, setAuthMode] = useState("login");
 
     const openLogin = () => { setAuthMode("login"); setIsAuthOpen(true); };
     const openSignup = () => { setAuthMode("signup"); setIsAuthOpen(true); };
+
+    const handleGetStarted = () => {
+        if (user) {
+            navigate("/dashboard");
+        } else {
+            openSignup();
+        }
+    };
 
     return (
         <div className="m-0 p-0 box-border font-['Poppins',sans-serif] bg-[color:var(--color-bg-primary)] min-h-screen">
@@ -38,7 +50,7 @@ export default function LandingPage() {
                             <button
                                 id="get-started"
                                 type="button"
-                                onClick={openSignup}
+                                onClick={handleGetStarted}
                                 className="bg-[color:var(--color-primary-blue)] text-[color:var(--color-text-primary)] text-[length:var(--font-size-h4)] py-1.5 px-2.5 rounded-[10px] border border-[color:var(--color-primary-blue)] cursor-pointer transition-all duration-500 hover:bg-[color:var(--color-primary-blue-alpha-80)] hover:border-[color:var(--color-primary-blue-alpha-80)] hover:translate-y-[3px]"
                             >
                                 Get Started

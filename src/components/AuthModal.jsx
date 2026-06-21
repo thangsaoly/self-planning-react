@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { login, signup } = useAuth();
 
     // Form state
     const [loginForm, setLoginForm] = useState({ email: "", password: "" });
@@ -26,24 +26,25 @@ export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
         setError("");
     };
 
-    const handleLoginSubmit = (event) => {
+    const handleLoginSubmit = async (event) => {
         event.preventDefault();
         if (!loginForm.email || !loginForm.password) {
             setError("Please fill in all fields");
             return;
         }
         setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setIsLoading(false);
-            login({ name: loginForm.email.split("@")[0], email: loginForm.email });
+        const result = await login(loginForm.email, loginForm.password);
+        setIsLoading(false);
+        if (result.success) {
             setLoginForm({ email: "", password: "" });
             onClose();
             navigate("/dashboard");
-        }, 800);
+        } else {
+            setError(result.error);
+        }
     };
 
-    const handleSignupSubmit = (event) => {
+    const handleSignupSubmit = async (event) => {
         event.preventDefault();
         if (!signupForm.fullname || !signupForm.email || !signupForm.password) {
             setError("Please fill in all fields");
@@ -54,14 +55,15 @@ export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
             return;
         }
         setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setIsLoading(false);
-            login({ name: signupForm.fullname, email: signupForm.email });
+        const result = await signup(signupForm.fullname, signupForm.email, signupForm.password);
+        setIsLoading(false);
+        if (result.success) {
             setSignupForm({ fullname: "", email: "", password: "" });
             onClose();
             navigate("/dashboard");
-        }, 800);
+        } else {
+            setError(result.error);
+        }
     };
 
     const handleSwitchMode = (newMode) => {
@@ -71,15 +73,26 @@ export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
         onSwitchMode(newMode);
     };
 
-    const handleGoogleSignIn = () => {
+    const handleGoogleSignIn = async () => {
         setIsLoading(true);
-        // Simulate Google OAuth
-        setTimeout(() => {
+        setError("");
+        
+        const loginResult = await login("google@example.com", "googlePassword123");
+        if (loginResult.success) {
             setIsLoading(false);
-            login({ name: "Google User", email: "google@example.com" });
             onClose();
             navigate("/dashboard");
-        }, 800);
+        } else {
+            // Account does not exist yet, register it first
+            const signupResult = await signup("Google User", "google@example.com", "googlePassword123");
+            setIsLoading(false);
+            if (signupResult.success) {
+                onClose();
+                navigate("/dashboard");
+            } else {
+                setError("Google sign-in simulation failed");
+            }
+        }
     };
 
     const isLogin = mode === "login";

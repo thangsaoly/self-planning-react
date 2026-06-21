@@ -3,6 +3,7 @@ import NewPlanModal from "../components/NewPlanModal";
 import TripDetailModal from "../components/TripDetailModal";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
+import { useAuth } from "../context/AuthContext";
 
 const initialVisitingTrips = [
     {
@@ -393,22 +394,28 @@ function TripSection({ icon, title, trips, sectionType, onNewPlan, onTripClick, 
             {/* Cards */}
             <div className="card-box flex flex-nowrap gap-5 overflow-x-auto overflow-y-hidden w-full max-w-full rounded-[10px] pb-2 scrollbar-hide">
                 {processedTrips.length > 0 ? (
-                    processedTrips.map((trip) => (
-                        <TripCard key={trip.id} trip={trip} onClick={() => onTripClick(trip)} sectionType={sectionType} onDragStart={onDragStart} />
-                    ))
+                    <>
+                        {processedTrips.map((trip) => (
+                            <TripCard key={trip.id} trip={trip} onClick={() => onTripClick(trip)} sectionType={sectionType} onDragStart={onDragStart} />
+                        ))}
+                        <NewPlanCard onClick={onNewPlan} />
+                    </>
                 ) : (
-                    <div className="flex flex-col items-center justify-center w-full py-8 gap-3 min-w-[280px]">
-                        <img 
-                            src={icon} 
-                            alt="Empty state" 
-                            className="w-16 h-16 opacity-50 grayscale" 
-                        />
-                        <span className="text-[color:var(--color-text-muted)] text-sm">
-                            {searchQuery ? "No trips matching your criteria" : "No trips here yet. Click + New Plan to start!"}
+                    <div 
+                        onClick={onNewPlan}
+                        className="flex flex-col items-center justify-center w-full py-10 gap-3 rounded-[10px] border border-dashed border-[color:var(--color-border-primary)] bg-[color:var(--color-bg-card)] cursor-pointer hover:border-[color:var(--color-primary-blue)] transition-all group min-h-[160px]"
+                    >
+                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-500/10 text-[color:var(--color-primary-blue)] group-hover:scale-110 transition-transform">
+                            <i className="fi fi-rr-plus text-xl flex items-center justify-center" />
+                        </div>
+                        <span className="text-[color:var(--color-text-primary)] font-medium text-sm">
+                            {searchQuery ? "No trips matching your criteria" : "Create a New Plan"}
+                        </span>
+                        <span className="text-[color:var(--color-text-secondary)] text-xs text-center max-w-xs px-4">
+                            {searchQuery ? "Try resetting your search query or filters" : "There are no trips in this category yet. Click here to plan your next adventure!"}
                         </span>
                     </div>
                 )}
-                <NewPlanCard onClick={onNewPlan} />
             </div>
         </div>
     );
@@ -418,30 +425,55 @@ import { useToast } from "../context/ToastContext";
 
 export default function DashboardPage() {
     const { addToast } = useToast();
-    const [visitingTrips, setVisitingTrips] = useState(() => {
-        const saved = localStorage.getItem("visitingTrips");
-        return saved ? JSON.parse(saved) : initialVisitingTrips;
-    });
-    const [upcomingTrips, setUpcomingTrips] = useState(() => {
-        const saved = localStorage.getItem("upcomingTrips");
-        return saved ? JSON.parse(saved) : initialUpcomingTrips;
-    });
-    const [visitedTrips, setVisitedTrips] = useState(() => {
-        const saved = localStorage.getItem("visitedTrips");
-        return saved ? JSON.parse(saved) : initialVisitedTrips;
-    });
+    const { token, logout } = useAuth();
+    const [visitingTrips, setVisitingTrips] = useState([]);
+    const [upcomingTrips, setUpcomingTrips] = useState([]);
+    const [visitedTrips, setVisitedTrips] = useState([]);
+    
+    // Centralized authenticated fetch wrapper
+    const authenticatedFetch = async (url, options = {}) => {
+        if (!token) return null;
+        const headers = {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+            ...options.headers
+        };
+        try {
+            const response = await fetch(url, { ...options, headers });
+            if (response.status === 401) {
+                logout();
+                addToast("Session expired, please log in again", "error");
+                return null;
+            }
+            return response;
+        } catch (error) {
+            console.error(`API Fetch Error (${url}):`, error);
+            throw error;
+        }
+    };
+
+    // Fetch trips from backend
+    const fetchTrips = async () => {
+        try {
+            const response = await authenticatedFetch("/api/trips");
+            if (!response) return;
+            const result = await response.json();
+            if (response.ok && result.status === "success") {
+                setVisitingTrips(result.data.visitingTrips || []);
+                setUpcomingTrips(result.data.upcomingTrips || []);
+                setVisitedTrips(result.data.visitedTrips || []);
+            } else {
+                addToast(result.message || "Failed to load trips", "error");
+            }
+        } catch (error) {
+            addToast("Failed to load trips due to network error", "error");
+        }
+    };
 
     useEffect(() => {
-        localStorage.setItem("visitingTrips", JSON.stringify(visitingTrips));
-    }, [visitingTrips]);
+        fetchTrips();
+    }, [token]);
 
-    useEffect(() => {
-        localStorage.setItem("upcomingTrips", JSON.stringify(upcomingTrips));
-    }, [upcomingTrips]);
-
-    useEffect(() => {
-        localStorage.setItem("visitedTrips", JSON.stringify(visitedTrips));
-    }, [visitedTrips]);
     const [isNewPlanOpen, setIsNewPlanOpen] = useState(false);
     const [targetSection, setTargetSection] = useState("visiting");
 
@@ -461,71 +493,66 @@ export default function DashboardPage() {
         setIsTripDetailOpen(true);
     };
 
-    const handleTripUpdate = (updatedTrip, oldSection, newSection) => {
-        // Remove from old section
-        const removeFromSection = (section, setSection) => {
-            setSection((prev) => prev.filter((t) => t.id !== selectedTrip.id));
-        };
-
-        // Add to new section
-        const addToSection = (setSection) => {
-            setSection((prev) => [...prev, updatedTrip]);
-        };
-
-        // If section changed, remove from old and add to new
-        if (oldSection !== newSection) {
-            // Remove from old section
-            switch (oldSection) {
-                case "visiting":
-                    removeFromSection(oldSection, setVisitingTrips);
-                    break;
-                case "upcoming":
-                    removeFromSection(oldSection, setUpcomingTrips);
-                    break;
-                case "visited":
-                    removeFromSection(oldSection, setVisitedTrips);
-                    break;
-            }
-            // Add to new section
-            switch (newSection) {
-                case "visiting":
-                    addToSection(setVisitingTrips);
-                    break;
-                case "upcoming":
-                    addToSection(setUpcomingTrips);
-                    break;
-                case "visited":
-                    addToSection(setVisitedTrips);
-                    break;
-            }
-        } else {
-            // Update in same section
-            const updateInSection = (setSection) => {
-                setSection((prev) =>
-                    prev.map((t) => (t.id === selectedTrip.id ? updatedTrip : t))
-                );
+    const handleTripUpdate = async (updatedTrip, oldSection, newSection) => {
+        try {
+            const payload = {
+                ...updatedTrip,
+                travelStatus: newSection
             };
-            switch (oldSection) {
-                case "visiting":
-                    updateInSection(setVisitingTrips);
-                    break;
-                case "upcoming":
-                    updateInSection(setUpcomingTrips);
-                    break;
-                case "visited":
-                    updateInSection(setVisitedTrips);
-                    break;
+
+            const response = await authenticatedFetch(`/api/trips/${updatedTrip.id}`, {
+                method: "PUT",
+                body: JSON.stringify(payload)
+            });
+            if (!response) return;
+
+            const result = await response.json();
+            if (response.ok && result.status === "success") {
+                const savedTrip = result.data;
+                // If section changed, remove from old and add to new
+                if (oldSection !== newSection) {
+                    if (oldSection === "visiting") setVisitingTrips((prev) => prev.filter((t) => t.id !== savedTrip.id));
+                    else if (oldSection === "upcoming") setUpcomingTrips((prev) => prev.filter((t) => t.id !== savedTrip.id));
+                    else if (oldSection === "visited") setVisitedTrips((prev) => prev.filter((t) => t.id !== savedTrip.id));
+
+                    if (newSection === "visiting") setVisitingTrips((prev) => [...prev, savedTrip]);
+                    else if (newSection === "upcoming") setUpcomingTrips((prev) => [...prev, savedTrip]);
+                    else if (newSection === "visited") setVisitedTrips((prev) => [...prev, savedTrip]);
+                } else {
+                    const updateList = (prev) => prev.map((t) => (t.id === savedTrip.id ? savedTrip : t));
+                    if (oldSection === "visiting") setVisitingTrips(updateList);
+                    else if (oldSection === "upcoming") setUpcomingTrips(updateList);
+                    else if (oldSection === "visited") setVisitedTrips(updateList);
+                }
+                addToast("Trip updated successfully", "success");
+            } else {
+                addToast(result.message || "Failed to update trip", "error");
             }
+        } catch (error) {
+            addToast("Failed to update trip due to network error", "error");
         }
     };
 
-    const handleTripDelete = (trip, section) => {
-        switch (section) {
-            case "visiting": setVisitingTrips((prev) => prev.filter((t) => t.id !== trip.id)); break;
-            case "upcoming": setUpcomingTrips((prev) => prev.filter((t) => t.id !== trip.id)); break;
-            case "visited": setVisitedTrips((prev) => prev.filter((t) => t.id !== trip.id)); break;
+    const handleTripDelete = async (trip, section) => {
+        try {
+            const response = await authenticatedFetch(`/api/trips/${trip.id}`, {
+                method: "DELETE"
+            });
+            if (!response) return;
+
+            const result = await response.json();
+            if (response.ok && result.status === "success") {
+                if (section === "visiting") setVisitingTrips((prev) => prev.filter((t) => t.id !== trip.id));
+                else if (section === "upcoming") setUpcomingTrips((prev) => prev.filter((t) => t.id !== trip.id));
+                else if (section === "visited") setVisitedTrips((prev) => prev.filter((t) => t.id !== trip.id));
+
+                addToast(`Deleted ${trip.name} successfully`, "info");
+            } else {
+                addToast(result.message || "Failed to delete trip", "error");
+            }
+        } catch (error) {
+            addToast("Failed to delete trip due to network error", "error");
         }
-        addToast(`Deleted ${trip.name} successfully`, "info");
     };
 
     const handleDragStart = (e, trip, sourceSection) => {
@@ -533,47 +560,86 @@ export default function DashboardPage() {
         e.dataTransfer.setData("sourceSection", sourceSection);
     };
 
-    const handleDrop = (e, targetSection) => {
+    const handleDrop = async (e, targetSection) => {
         const tripId = e.dataTransfer.getData("tripId");
         const sourceSection = e.dataTransfer.getData("sourceSection");
         
         if (sourceSection === targetSection || !tripId) return;
 
         let tripToMove = null;
-        
-        // Remove from source
-        const removeFromSource = (setSection, trips) => {
-            tripToMove = trips.find(t => t.id === tripId);
-            if (tripToMove) setSection(prev => prev.filter(t => t.id !== tripId));
-        };
-
-        if (sourceSection === "visiting") removeFromSource(setVisitingTrips, visitingTrips);
-        else if (sourceSection === "upcoming") removeFromSource(setUpcomingTrips, upcomingTrips);
-        else if (sourceSection === "visited") removeFromSource(setVisitedTrips, visitedTrips);
+        if (sourceSection === "visiting") tripToMove = visitingTrips.find(t => t.id === tripId);
+        else if (sourceSection === "upcoming") tripToMove = upcomingTrips.find(t => t.id === tripId);
+        else if (sourceSection === "visited") tripToMove = visitedTrips.find(t => t.id === tripId);
 
         if (!tripToMove) return;
 
-        // Add to target
-        if (targetSection === "visiting") setVisitingTrips(prev => [...prev, tripToMove]);
-        else if (targetSection === "upcoming") setUpcomingTrips(prev => [...prev, tripToMove]);
-        else if (targetSection === "visited") setVisitedTrips(prev => [...prev, tripToMove]);
+        try {
+            const response = await authenticatedFetch(`/api/trips/${tripId}`, {
+                method: "PUT",
+                body: JSON.stringify({
+                    ...tripToMove,
+                    travelStatus: targetSection
+                })
+            });
+            if (!response) return;
 
-        addToast(`Moved ${tripToMove.name} to ${targetSection}`, "success");
+            const result = await response.json();
+            if (response.ok && result.status === "success") {
+                const updatedTrip = result.data;
+                if (sourceSection === "visiting") setVisitingTrips(prev => prev.filter(t => t.id !== tripId));
+                else if (sourceSection === "upcoming") setUpcomingTrips(prev => prev.filter(t => t.id !== tripId));
+                else if (sourceSection === "visited") setVisitedTrips(prev => prev.filter(t => t.id !== tripId));
+
+                if (targetSection === "visiting") setVisitingTrips(prev => [...prev, updatedTrip]);
+                else if (targetSection === "upcoming") setUpcomingTrips(prev => [...prev, updatedTrip]);
+                else if (targetSection === "visited") setVisitedTrips(prev => [...prev, updatedTrip]);
+
+                addToast(`Moved ${updatedTrip.name} to ${targetSection}`, "success");
+            } else {
+                addToast(result.message || "Failed to move trip", "error");
+            }
+        } catch (error) {
+            addToast("Failed to move trip due to network error", "error");
+        }
     };
 
-    const handleNewPlanSubmit = (cardData, status) => {
-        switch (status) {
-            case "visiting":
-                setVisitingTrips((prev) => [...prev, cardData]);
-                break;
-            case "upcoming":
-                setUpcomingTrips((prev) => [...prev, cardData]);
-                break;
-            case "visited":
-                setVisitedTrips((prev) => [...prev, cardData]);
-                break;
-            default:
-                setVisitingTrips((prev) => [...prev, cardData]);
+    const handleNewPlanSubmit = async (cardData, status) => {
+        try {
+            const response = await authenticatedFetch("/api/trips", {
+                method: "POST",
+                body: JSON.stringify({
+                    booking: { departure: null, arrival: null },
+                    transport: [],
+                    highlights: [],
+                    costs: [],
+                    ...cardData,
+                    travelStatus: status
+                })
+            });
+            if (!response) return;
+
+            const result = await response.json();
+            if (response.ok && result.status === "success") {
+                const newTrip = result.data;
+                switch (status) {
+                    case "visiting":
+                        setVisitingTrips((prev) => [...prev, newTrip]);
+                        break;
+                    case "upcoming":
+                        setUpcomingTrips((prev) => [...prev, newTrip]);
+                        break;
+                    case "visited":
+                        setVisitedTrips((prev) => [...prev, newTrip]);
+                        break;
+                    default:
+                        setVisitingTrips((prev) => [...prev, newTrip]);
+                }
+                addToast(`Created plan for ${newTrip.name}!`, "success");
+            } else {
+                addToast(result.message || "Failed to create plan", "error");
+            }
+        } catch (error) {
+            addToast("Failed to create plan due to network error", "error");
         }
     };
 
