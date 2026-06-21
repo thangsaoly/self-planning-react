@@ -13,7 +13,7 @@ The Self-Planning Travel Planner is an all-in-one digital companion designed to 
 - **Frontend:** React 19, React Router v7
 - **Styling:** Tailwind CSS v4
 - **Build Tool:** Vite v7
-- **Future Backend:** PHP (API integration planned)
+- **Future Backend:** Express.js (API integration planned / initialized)
 
 ## 📖 The Project Journey
 This repository is the culmination of multiple iterations, learning phases, and architectural upgrades. To read the full story of how this application evolved from a simple Term 1 class project into a modern React application, please read the [PROJECT_JOURNEY.md](./PROJECT_JOURNEY.md).

@@ -7,11 +7,10 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      // Proxy API requests to PHP server
+      // Proxy API requests to Express server
       '/api': {
-        target: 'http://localhost:8000', // PHP server address
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        target: 'http://localhost:5000', // Express server address
+        changeOrigin: true
       }
     }
   }

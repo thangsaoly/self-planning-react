@@ -47,8 +47,8 @@ This migration transformed the project from a static web page into a modern, dyn
 
 While the application currently handles state purely on the frontend (utilizing `localStorage` for data persistence), the vision for the project doesn't stop here.
 
-The next major milestone is to integrate a **PHP Backend API**. 
-- The `api/` directory has already been initialized to house the server logic.
+The next major milestone is to integrate a **Node.js / Express.js Backend API**. 
+- The `server/` directory has been initialized to house the server logic and stubs.
 - We plan to implement real user authentication, cloud database storage for trips, and cross-device synchronization.
 
 ---
