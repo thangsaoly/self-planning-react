@@ -1,119 +1,33 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import NewPlanModal from "../components/NewPlanModal";
 import TripDetailModal from "../components/TripDetailModal";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
+import { useOfflineSync } from "../hooks/useOfflineSync";
+import * as tripService from "../services/tripService";
 
-const initialVisitingTrips = [
-    {
-        id: "visiting-1",
-        name: "Angkor Wat",
-        emoji: "🏕",
-        type: "Exposure trip",
-        typeClass: "Festival",
-        image:
-            "https://lh3.googleusercontent.com/gps-cs-s/AHVAweoqqk36txlGVjsbenr5c72MVPdDXLzxMnSYHSh8AHJRCS3PBFX0JwIFyWNcz4RVAwmFrK-jMUA3pjAE0Mqdj4msZ7BaX9h1FLhXGuDanxrVp3JrFnCP0YIHbZjZ6N0pwGhYliioxQ=s1360-w1360-h1020-rw",
-    },
-    {
-        id: "visiting-2",
-        name: "Kampot",
-        emoji: "🏕",
-        type: "Beach",
-        typeClass: "Beach",
-        image:
-            "https://www.asiaone.com/sites/default/files/styles/article_top_image/public/original_images/Apr2024/140424_kampot_ig.jpg?itok=nFu0VoBZ",
-    },
-    {
-        id: "visiting-3",
-        name: "Singapore",
-        emoji: "🏙",
-        type: "Citytrip",
-        typeClass: "Citytrip",
-        image:
-            "https://media.assettype.com/outlooktraveller%2F2023-11%2F65edc73f-81ce-425c-a7f5-4bd34133f095%2Fshutterstock_697224274.jpeg?w=1024&auto=format%2Ccompress&fit=max",
-    },
-];
+// ── Offline cache helpers ──────────────────────────────────────────────────
+const CACHE_KEY = "trips_cache";
 
-const initialUpcomingTrips = [
-    {
-        id: "upcoming-1",
-        name: "New York",
-        emoji: "🏙",
-        type: "Citytrip",
-        typeClass: "Citytrip",
-        image:
-            "https://res.cloudinary.com/shipit-cdn/images/c_scale,w_448,h_299,dpr_2/f_auto,q_auto/v1733410609/wordpress/new-york/new-york.jpg?_i=AA",
-    },
-    {
-        id: "upcoming-2",
-        name: "Mondulkiri",
-        emoji: "🏕",
-        type: "Roadtrip",
-        typeClass: "Roadtrip",
-        image:
-            "https://southeastasiabackpacker.com/wp-content/uploads/2024/02/Bousra-Waterfall-Sen-Monorom-1200x800.jpg",
-    },
-    {
-        id: "upcoming-3",
-        name: "Phnom 1500",
-        emoji: "🏕",
-        type: "Roadtrip",
-        typeClass: "Roadtrip",
-        image:
-            "https://www.indochinatour.com/assets/images/Cambodia-/road-phnom-1500.jpg",
-    },
-    {
-        id: "upcoming-4",
-        name: "Kirirom National Park",
-        emoji: "🏕",
-        type: "Camping",
-        typeClass: "Camping",
-        image:
-            "https://www.techoairport.com.kh/tia-backend/locators/1754102693993-Picture2.png",
-    },
-];
+const saveCache = (data) => {
+    try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+    } catch { /* storage full — silently ignore */ }
+};
 
-const initialVisitedTrips = [
-    {
-        id: "visited-1",
-        name: "Barcelona",
-        emoji: "🏙",
-        type: "Citytrip",
-        typeClass: "Citytrip",
-        image:
-            "https://images.contentstack.io/v3/assets/blt06f605a34f1194ff/blt98aab8678ac3bce7/663907b78447cbf1b69ca84f/logan-armstrong-hVhfqhDYciU-unsplash-edited-MOBILE-HEADER.jpg?fit=crop&disable=upscale&auto=webp&quality=60&crop=smart",
-    },
-    {
-        id: "visited-2",
-        name: "Japan",
-        emoji: "🏙",
-        type: "Citytrip",
-        typeClass: "Citytrip",
-        image:
-            "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1280&q=80",
-    },
-    {
-        id: "visited-3",
-        name: "Area 51, Nevada",
-        emoji: "🏕",
-        type: "Camping",
-        typeClass: "Camping",
-        image:
-            "https://cdn.mos.cms.futurecdn.net/v2/t:0,l:459,cw:1184,ch:1184,q:80,w:1184/Z6rs3jNJab8PC2cWavyt97.jpg",
-    },
-    {
-        id: "visited-4",
-        name: "Moscow",
-        emoji: "🏙",
-        type: "Citytrip",
-        typeClass: "Citytrip",
-        image:
-            "https://geohistory.today/wp-content/uploads/2017/09/Moscow.jpg",
-    },
-];
+const loadCache = () => {
+    try {
+        return JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+    } catch {
+        return null;
+    }
+};
 
-// Travel type color mapping
+// ── Temporary ID generator (used while offline) ────────────────────────────
+const tempId = () => `temp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+// ── Travel type color mapping ─────────────────────────────────────────────
 const typeColors = {
     Citytrip: "bg-[color:var(--color-tag-citytrip)]",
     Roadtrip: "bg-[color:var(--color-tag-roadtrip)]",
@@ -122,6 +36,7 @@ const typeColors = {
     Camping: "bg-[color:var(--color-tag-camping)]",
     Hiking: "bg-[color:var(--color-tag-hiking)]",
 };
+
 
 function TripCard({ trip, onClick, sectionType, onDragStart }) {
     const totalTasks = (trip.todos?.length || 0) + (trip.packing?.length || 0);
@@ -429,46 +344,104 @@ export default function DashboardPage() {
     const [visitingTrips, setVisitingTrips] = useState([]);
     const [upcomingTrips, setUpcomingTrips] = useState([]);
     const [visitedTrips, setVisitedTrips] = useState([]);
-    
-    // Centralized authenticated fetch wrapper
-    const authenticatedFetch = async (url, options = {}) => {
-        if (!token) return null;
-        const headers = {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-            ...options.headers
-        };
+    const [isLoading, setIsLoading] = useState(true);
+
+    // ── Helpers to update all three state arrays + cache ──────────────────
+    const applyTripsState = useCallback((data) => {
+        setVisitingTrips(data.visitingTrips || []);
+        setUpcomingTrips(data.upcomingTrips || []);
+        setVisitedTrips(data.visitedTrips || []);
+        saveCache(data);
+    }, []);
+
+    const removeFromState = useCallback((id) => {
+        setVisitingTrips((p) => p.filter((t) => t.id !== id));
+        setUpcomingTrips((p) => p.filter((t) => t.id !== id));
+        setVisitedTrips((p) => p.filter((t) => t.id !== id));
+    }, []);
+
+    const addToSection = useCallback((trip, section) => {
+        if (section === "visiting") setVisitingTrips((p) => [...p, trip]);
+        else if (section === "upcoming") setUpcomingTrips((p) => [...p, trip]);
+        else if (section === "visited") setVisitedTrips((p) => [...p, trip]);
+    }, []);
+
+    const updateInSection = useCallback((trip, section) => {
+        const updater = (prev) => prev.map((t) => (t.id === trip.id ? trip : t));
+        if (section === "visiting") setVisitingTrips(updater);
+        else if (section === "upcoming") setUpcomingTrips(updater);
+        else if (section === "visited") setVisitedTrips(updater);
+    }, []);
+
+    // ── Offline queue flush function ───────────────────────────────────────
+    const flushOperation = useCallback(async (operation) => {
+        if (!token) return;
+        const { type, payload, tempId: tid, section } = operation;
+
+        if (type === "create") {
+            const result = await tripService.createTrip(token, payload);
+            if (!result.success) throw new Error(result.error);
+            // Replace temp ID with real server ID in UI
+            const newTrip = result.data;
+            setVisitingTrips((p) => p.map((t) => (t.id === tid ? newTrip : t)));
+            setUpcomingTrips((p) => p.map((t) => (t.id === tid ? newTrip : t)));
+            setVisitedTrips((p) => p.map((t) => (t.id === tid ? newTrip : t)));
+            addToast(`Synced "${newTrip.name}" to server`, "success");
+        } else if (type === "update") {
+            const result = await tripService.updateTrip(token, payload.id, payload);
+            if (!result.success) throw new Error(result.error);
+            updateInSection(result.data, section);
+        } else if (type === "delete") {
+            const result = await tripService.deleteTrip(token, payload.id);
+            if (!result.success && !result.error?.includes("not found")) throw new Error(result.error);
+        }
+    }, [token, addToast, updateInSection]);
+
+    const { isOnline, pendingCount, queueOperation } = useOfflineSync(flushOperation);
+
+    // ── Fetch trips (with offline fallback) ───────────────────────────────
+    const fetchTrips = useCallback(async () => {
+        if (!token) return;
+        setIsLoading(true);
+        if (!isOnline) {
+            const cached = loadCache();
+            if (cached) {
+                applyTripsState(cached);
+            }
+            setIsLoading(false);
+            return;
+        }
         try {
-            const response = await fetch(url, { ...options, headers });
-            if (response.status === 401) {
+            const result = await tripService.fetchTrips(token);
+            if (result.unauthorized) {
                 logout();
                 addToast("Session expired, please log in again", "error");
-                return null;
+                return;
             }
-            return response;
-        } catch (error) {
-            console.error(`API Fetch Error (${url}):`, error);
-            throw error;
-        }
-    };
-
-    // Fetch trips from backend
-    const fetchTrips = async () => {
-        try {
-            const response = await authenticatedFetch("/api/trips");
-            if (!response) return;
-            const result = await response.json();
-            if (response.ok && result.status === "success") {
-                setVisitingTrips(result.data.visitingTrips || []);
-                setUpcomingTrips(result.data.upcomingTrips || []);
-                setVisitedTrips(result.data.visitedTrips || []);
+            if (result.success) {
+                applyTripsState(result.data);
             } else {
-                addToast(result.message || "Failed to load trips", "error");
+                // Try cache as fallback
+                const cached = loadCache();
+                if (cached) {
+                    applyTripsState(cached);
+                    addToast("Loaded trips from local cache", "info");
+                } else {
+                    addToast(result.error || "Failed to load trips", "error");
+                }
             }
-        } catch (error) {
-            addToast("Failed to load trips due to network error", "error");
+        } catch {
+            const cached = loadCache();
+            if (cached) {
+                applyTripsState(cached);
+                addToast("Loaded trips from local cache (network error)", "info");
+            } else {
+                addToast("Failed to load trips — no cache available", "error");
+            }
+        } finally {
+            setIsLoading(false);
         }
-    };
+    }, [token, isOnline, logout, addToast, applyTripsState]);
 
     useEffect(() => {
         fetchTrips();
@@ -494,63 +467,59 @@ export default function DashboardPage() {
     };
 
     const handleTripUpdate = async (updatedTrip, oldSection, newSection) => {
+        const payload = { ...updatedTrip, travelStatus: newSection };
+
+        // Optimistic UI update
+        removeFromState(updatedTrip.id);
+        addToSection({ ...updatedTrip, travelStatus: newSection }, newSection);
+
+        if (!isOnline) {
+            queueOperation({ type: "update", payload, section: newSection });
+            addToast("Saved offline — will sync when reconnected", "info");
+            return;
+        }
+
         try {
-            const payload = {
-                ...updatedTrip,
-                travelStatus: newSection
-            };
-
-            const response = await authenticatedFetch(`/api/trips/${updatedTrip.id}`, {
-                method: "PUT",
-                body: JSON.stringify(payload)
-            });
-            if (!response) return;
-
-            const result = await response.json();
-            if (response.ok && result.status === "success") {
-                const savedTrip = result.data;
-                // If section changed, remove from old and add to new
-                if (oldSection !== newSection) {
-                    if (oldSection === "visiting") setVisitingTrips((prev) => prev.filter((t) => t.id !== savedTrip.id));
-                    else if (oldSection === "upcoming") setUpcomingTrips((prev) => prev.filter((t) => t.id !== savedTrip.id));
-                    else if (oldSection === "visited") setVisitedTrips((prev) => prev.filter((t) => t.id !== savedTrip.id));
-
-                    if (newSection === "visiting") setVisitingTrips((prev) => [...prev, savedTrip]);
-                    else if (newSection === "upcoming") setUpcomingTrips((prev) => [...prev, savedTrip]);
-                    else if (newSection === "visited") setVisitedTrips((prev) => [...prev, savedTrip]);
-                } else {
-                    const updateList = (prev) => prev.map((t) => (t.id === savedTrip.id ? savedTrip : t));
-                    if (oldSection === "visiting") setVisitingTrips(updateList);
-                    else if (oldSection === "upcoming") setUpcomingTrips(updateList);
-                    else if (oldSection === "visited") setVisitedTrips(updateList);
-                }
+            const result = await tripService.updateTrip(token, updatedTrip.id, payload);
+            if (result.unauthorized) { logout(); return; }
+            if (result.success) {
+                updateInSection(result.data, newSection);
                 addToast("Trip updated successfully", "success");
             } else {
-                addToast(result.message || "Failed to update trip", "error");
+                // Rollback
+                removeFromState(updatedTrip.id);
+                addToSection(updatedTrip, oldSection);
+                addToast(result.error || "Failed to update trip", "error");
             }
-        } catch (error) {
+        } catch {
+            removeFromState(updatedTrip.id);
+            addToSection(updatedTrip, oldSection);
             addToast("Failed to update trip due to network error", "error");
         }
     };
 
     const handleTripDelete = async (trip, section) => {
+        // Optimistic UI removal
+        removeFromState(trip.id);
+
+        if (!isOnline) {
+            queueOperation({ type: "delete", payload: trip, section });
+            addToast(`Deleted "${trip.name}" offline — will sync when reconnected`, "info");
+            return;
+        }
+
         try {
-            const response = await authenticatedFetch(`/api/trips/${trip.id}`, {
-                method: "DELETE"
-            });
-            if (!response) return;
-
-            const result = await response.json();
-            if (response.ok && result.status === "success") {
-                if (section === "visiting") setVisitingTrips((prev) => prev.filter((t) => t.id !== trip.id));
-                else if (section === "upcoming") setUpcomingTrips((prev) => prev.filter((t) => t.id !== trip.id));
-                else if (section === "visited") setVisitedTrips((prev) => prev.filter((t) => t.id !== trip.id));
-
+            const result = await tripService.deleteTrip(token, trip.id);
+            if (result.unauthorized) { logout(); return; }
+            if (result.success) {
                 addToast(`Deleted ${trip.name} successfully`, "info");
             } else {
-                addToast(result.message || "Failed to delete trip", "error");
+                // Rollback
+                addToSection(trip, section);
+                addToast(result.error || "Failed to delete trip", "error");
             }
-        } catch (error) {
+        } catch {
+            addToSection(trip, section);
             addToast("Failed to delete trip due to network error", "error");
         }
     };
@@ -560,85 +529,50 @@ export default function DashboardPage() {
         e.dataTransfer.setData("sourceSection", sourceSection);
     };
 
-    const handleDrop = async (e, targetSection) => {
+    const handleDrop = async (e, dropSection) => {
         const tripId = e.dataTransfer.getData("tripId");
         const sourceSection = e.dataTransfer.getData("sourceSection");
-        
-        if (sourceSection === targetSection || !tripId) return;
+        if (sourceSection === dropSection || !tripId) return;
 
         let tripToMove = null;
-        if (sourceSection === "visiting") tripToMove = visitingTrips.find(t => t.id === tripId);
-        else if (sourceSection === "upcoming") tripToMove = upcomingTrips.find(t => t.id === tripId);
-        else if (sourceSection === "visited") tripToMove = visitedTrips.find(t => t.id === tripId);
-
+        if (sourceSection === "visiting") tripToMove = visitingTrips.find((t) => t.id === tripId);
+        else if (sourceSection === "upcoming") tripToMove = upcomingTrips.find((t) => t.id === tripId);
+        else if (sourceSection === "visited") tripToMove = visitedTrips.find((t) => t.id === tripId);
         if (!tripToMove) return;
 
-        try {
-            const response = await authenticatedFetch(`/api/trips/${tripId}`, {
-                method: "PUT",
-                body: JSON.stringify({
-                    ...tripToMove,
-                    travelStatus: targetSection
-                })
-            });
-            if (!response) return;
-
-            const result = await response.json();
-            if (response.ok && result.status === "success") {
-                const updatedTrip = result.data;
-                if (sourceSection === "visiting") setVisitingTrips(prev => prev.filter(t => t.id !== tripId));
-                else if (sourceSection === "upcoming") setUpcomingTrips(prev => prev.filter(t => t.id !== tripId));
-                else if (sourceSection === "visited") setVisitedTrips(prev => prev.filter(t => t.id !== tripId));
-
-                if (targetSection === "visiting") setVisitingTrips(prev => [...prev, updatedTrip]);
-                else if (targetSection === "upcoming") setUpcomingTrips(prev => [...prev, updatedTrip]);
-                else if (targetSection === "visited") setVisitedTrips(prev => [...prev, updatedTrip]);
-
-                addToast(`Moved ${updatedTrip.name} to ${targetSection}`, "success");
-            } else {
-                addToast(result.message || "Failed to move trip", "error");
-            }
-        } catch (error) {
-            addToast("Failed to move trip due to network error", "error");
-        }
+        await handleTripUpdate(tripToMove, sourceSection, dropSection);
+        if (isOnline) addToast(`Moved ${tripToMove.name} to ${dropSection}`, "success");
     };
 
     const handleNewPlanSubmit = async (cardData, status) => {
-        try {
-            const response = await authenticatedFetch("/api/trips", {
-                method: "POST",
-                body: JSON.stringify({
-                    booking: { departure: null, arrival: null },
-                    transport: [],
-                    highlights: [],
-                    costs: [],
-                    ...cardData,
-                    travelStatus: status
-                })
-            });
-            if (!response) return;
+        const tripData = {
+            booking: { departure: null, arrival: null },
+            transport: [],
+            highlights: [],
+            costs: [],
+            ...cardData,
+            travelStatus: status,
+        };
 
-            const result = await response.json();
-            if (response.ok && result.status === "success") {
-                const newTrip = result.data;
-                switch (status) {
-                    case "visiting":
-                        setVisitingTrips((prev) => [...prev, newTrip]);
-                        break;
-                    case "upcoming":
-                        setUpcomingTrips((prev) => [...prev, newTrip]);
-                        break;
-                    case "visited":
-                        setVisitedTrips((prev) => [...prev, newTrip]);
-                        break;
-                    default:
-                        setVisitingTrips((prev) => [...prev, newTrip]);
-                }
-                addToast(`Created plan for ${newTrip.name}!`, "success");
+        if (!isOnline) {
+            const tid = tempId();
+            const offlineTrip = { ...tripData, id: tid };
+            addToSection(offlineTrip, status);
+            queueOperation({ type: "create", payload: tripData, tempId: tid, section: status });
+            addToast(`"${cardData.name}" saved offline — will sync when reconnected`, "info");
+            return;
+        }
+
+        try {
+            const result = await tripService.createTrip(token, tripData);
+            if (result.unauthorized) { logout(); return; }
+            if (result.success) {
+                addToSection(result.data, status);
+                addToast(`Created plan for ${result.data.name}!`, "success");
             } else {
-                addToast(result.message || "Failed to create plan", "error");
+                addToast(result.error || "Failed to create plan", "error");
             }
-        } catch (error) {
+        } catch {
             addToast("Failed to create plan due to network error", "error");
         }
     };
@@ -647,7 +581,7 @@ export default function DashboardPage() {
         <div className="min-h-screen bg-[color:var(--color-bg-primary)] font-['Poppins',sans-serif] pb-14">
             {/* Navbar */}
             <div className="flex items-center justify-center w-full">
-                <NavBar />
+                <NavBar isOnline={isOnline} pendingCount={pendingCount} />
             </div>
 
             <div className="dashboard">
@@ -678,44 +612,79 @@ export default function DashboardPage() {
                     </h1>
                 </div>
 
+                {/* Offline banner */}
+                {!isOnline && (
+                    <div
+                        id="offline-banner"
+                        className="fixed top-[70px] left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/90 backdrop-blur-sm text-white text-sm font-medium shadow-lg animate-pulse"
+                    >
+                        <span>⚡</span>
+                        <span>
+                            Offline
+                            {pendingCount > 0 && ` — ${pendingCount} change${pendingCount > 1 ? "s" : ""} pending sync`}
+                        </span>
+                    </div>
+                )}
+
                 {/* Main container box */}
                 <div className="container-box flex flex-col justify-center items-center mt-[200px] w-full gap-14">
-                    {/* Visiting Section */}
-                    <TripSection
-                        icon="https://cdn-icons-png.flaticon.com/128/1692/1692037.png"
-                        title="Visiting"
-                        trips={visitingTrips}
-                        sectionType="visiting"
-                        onNewPlan={() => handleNewPlanClick("visiting")}
-                        onTripClick={(trip) => handleTripClick(trip, "visiting")}
-                        onDragStart={handleDragStart}
-                        onDrop={handleDrop}
-                    />
+                    {/* Loading skeleton */}
+                    {isLoading && (
+                        <div className="flex flex-col gap-8 w-full px-8 animate-pulse">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="flex flex-col gap-3">
+                                    <div className="h-5 w-40 bg-[color:var(--color-bg-card)] rounded-md" />
+                                    <div className="flex gap-4 overflow-hidden">
+                                        {[1, 2, 3].map((j) => (
+                                            <div key={j} className="flex-shrink-0 w-[280px] h-[200px] bg-[color:var(--color-bg-card)] rounded-[10px]" />
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    {/* Trip Sections — shown once loading is done */}
+                    {!isLoading && (
+                        <>
+                            {/* Visiting Section */}
+                            <TripSection
+                                icon="https://cdn-icons-png.flaticon.com/128/1692/1692037.png"
+                                title="Visiting"
+                                trips={visitingTrips}
+                                sectionType="visiting"
+                                onNewPlan={() => handleNewPlanClick("visiting")}
+                                onTripClick={(trip) => handleTripClick(trip, "visiting")}
+                                onDragStart={handleDragStart}
+                                onDrop={handleDrop}
+                            />
 
-                    {/* Upcoming Holidays Section */}
-                    <TripSection
-                        icon="https://cdn-icons-png.flaticon.com/128/6381/6381403.png"
-                        title="Upcoming Holidays"
-                        trips={upcomingTrips}
-                        sectionType="upcoming"
-                        onNewPlan={() => handleNewPlanClick("upcoming")}
-                        onTripClick={(trip) => handleTripClick(trip, "upcoming")}
-                        onDragStart={handleDragStart}
-                        onDrop={handleDrop}
-                    />
+                            {/* Upcoming Holidays Section */}
+                            <TripSection
+                                icon="https://cdn-icons-png.flaticon.com/128/6381/6381403.png"
+                                title="Upcoming Holidays"
+                                trips={upcomingTrips}
+                                sectionType="upcoming"
+                                onNewPlan={() => handleNewPlanClick("upcoming")}
+                                onTripClick={(trip) => handleTripClick(trip, "upcoming")}
+                                onDragStart={handleDragStart}
+                                onDrop={handleDrop}
+                            />
 
-                    {/* Visited Section */}
-                    <TripSection
-                        icon="https://cdn-icons-png.flaticon.com/128/4698/4698094.png"
-                        title="Visited"
-                        trips={visitedTrips}
-                        sectionType="visited"
-                        onNewPlan={() => handleNewPlanClick("visited")}
-                        onTripClick={(trip) => handleTripClick(trip, "visited")}
-                        onDragStart={handleDragStart}
-                        onDrop={handleDrop}
-                    />
+                            {/* Visited Section */}
+                            <TripSection
+                                icon="https://cdn-icons-png.flaticon.com/128/4698/4698094.png"
+                                title="Visited"
+                                trips={visitedTrips}
+                                sectionType="visited"
+                                onNewPlan={() => handleNewPlanClick("visited")}
+                                onTripClick={(trip) => handleTripClick(trip, "visited")}
+                                onDragStart={handleDragStart}
+                                onDrop={handleDrop}
+                            />
+                        </>
+                    )}
                 </div>
+
             </div>
 
             {/* New Plan Modal */}

@@ -42,14 +42,29 @@ Saoly spearheaded the initiative to migrate the entire project to **React**. Thi
 
 This migration transformed the project from a static web page into a modern, dynamic web application.
 
-## Phase 4: The Backend Integration (Upcoming)
-**Next Steps**
+## Phase 4: The Backend Integration ✅
+**Lead Developer:** Thang Saoly
 
-While the application currently handles state purely on the frontend (utilizing `localStorage` for data persistence), the vision for the project doesn't stop here.
+With the React frontend stable, the next step was to connect it to a real backend. Saoly built and integrated a full **Node.js / Express.js REST API**, replacing all `localStorage` data persistence with a cloud-backed database.
 
-The next major milestone is to integrate a **Node.js / Express.js Backend API**. 
-- The `server/` directory has been initialized to house the server logic and stubs.
-- We plan to implement real user authentication, cloud database storage for trips, and cross-device synchronization.
+Key achievements in this phase:
+- **Express.js API** with full CRUD routes for trips (`GET`, `POST`, `PUT`, `DELETE`).
+- **JWT Authentication** — secure, token-based login and signup via `/api/auth`.
+- **MySQL / Sequelize ORM** — `User` and `Trip` models with proper relational schema.
+- **Frontend API Layer** (`src/services/tripService.js`) — centralized, clean API calls replacing scattered inline fetch logic.
+- **React Auth Context** — login/signup/logout fully wired to the backend; tokens stored in `localStorage`.
+- **Vite Dev Proxy** — configured to forward `/api` requests to the Express server during development.
+
+## Phase 5: Offline-First Sync 🔄
+**Lead Developer:** Thang Saoly
+
+Recognizing that travel planners are used in all kinds of connectivity conditions, Phase 5 introduced a resilient **offline-first architecture**:
+
+- **Trip Cache** — on every successful API fetch, trips are saved to `localStorage` as a cache. If the API is unavailable (server down, network error), the cache is loaded as a fallback.
+- **Pending Operations Queue** (`offline_queue` in `localStorage`) — any create, update, or delete performed while offline is queued instead of dropped.
+- **Auto Sync on Reconnect** — the `useOfflineSync` hook listens to the browser's `online` / `offline` events. When connectivity is restored, the queue is automatically replayed to the server in order.
+- **Optimistic UI** — deletes and updates are reflected instantly in the UI without waiting for the server, with automatic rollback if the server rejects the operation.
+- **Offline Indicator** — the NavBar displays a subtle animated "Offline (N pending)" badge whenever the user is disconnected, keeping them informed without interrupting the experience.
 
 ---
 

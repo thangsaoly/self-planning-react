@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 
-export default function NavBar({ onLoginClick, onSignupClick }) {
+export default function NavBar({ onLoginClick, onSignupClick, isOnline = true, pendingCount = 0 }) {
     const { pathname } = useLocation();
     const { user, logout } = useAuth();
     const { addToast } = useToast();
@@ -71,6 +71,16 @@ export default function NavBar({ onLoginClick, onSignupClick }) {
                             </li>
                         </ul>
                         <div className="log-sign flex flex-col lg:flex-row gap-2.5 w-full lg:w-auto items-center">
+                            {/* Offline indicator pill */}
+                            {!isOnline && (
+                                <div
+                                    id="navbar-offline-badge"
+                                    className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-medium transition-all duration-300"
+                                >
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                                    <span>Offline{pendingCount > 0 ? ` (${pendingCount} pending)` : ""}</span>
+                                </div>
+                            )}
                             {showProfile ? (
                                 /* Profile section when logged in */
                                 <div className="profile flex items-center gap-3 px-3 py-1.5 bg-[color:var(--color-bg-card)] rounded-full">
