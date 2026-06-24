@@ -17,6 +17,14 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 // API Routes
+app.get("/", (req, res) => {
+  res.json({
+    message: "Welcome to the Self-Planning Travel Planner API",
+    status: "active",
+    documentation: "/api"
+  });
+});
+
 app.use("/api", apiRouter);
 
 // Fallback error handler for undefined routes

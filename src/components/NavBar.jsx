@@ -90,6 +90,9 @@ export default function NavBar({ onLoginClick, onSignupClick, isOnline = true, p
                                     <span className="text-[color:var(--color-text-primary)] text-sm font-medium">
                                         {userName}
                                     </span>
+                                    <Link to="/profile" className="text-[color:var(--color-text-secondary)] hover:text-[color:var(--color-primary-blue)] transition-colors cursor-pointer" title="Profile">
+                                        <i className="fi fi-rr-user" />
+                                    </Link>
                                     <button onClick={handleLogoutClick} className="text-[color:var(--color-text-secondary)] hover:text-red-500 transition-colors cursor-pointer" title="Log Out">
                                         <i className="fi fi-rr-sign-out-alt" />
                                     </button>
