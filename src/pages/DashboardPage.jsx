@@ -3,6 +3,7 @@ import NewPlanModal from "../components/NewPlanModal";
 import TripDetailModal from "../components/TripDetailModal";
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
+import ChatWidget from "../components/ChatWidget";
 import { useAuth } from "../context/AuthContext";
 import { useOfflineSync } from "../hooks/useOfflineSync";
 import * as tripService from "../services/tripService";
@@ -443,12 +444,13 @@ export default function DashboardPage() {
         }
     }, [token, isOnline, logout, addToast, applyTripsState]);
 
+    const [isNewPlanOpen, setIsNewPlanOpen] = useState(false);
+    const [targetSection, setTargetSection] = useState("visiting");
+
     useEffect(() => {
         fetchTrips();
     }, [token]);
 
-    const [isNewPlanOpen, setIsNewPlanOpen] = useState(false);
-    const [targetSection, setTargetSection] = useState("visiting");
 
     // Trip detail modal state
     const [selectedTrip, setSelectedTrip] = useState(null);
@@ -464,6 +466,30 @@ export default function DashboardPage() {
         setSelectedTrip(trip);
         setSelectedSection(section);
         setIsTripDetailOpen(true);
+    };
+
+    const handleTripPartialUpdate = async (tripId, section, partialData) => {
+        try {
+            const response = await authenticatedFetch(`/api/trips/${tripId}`, {
+                method: "PUT",
+                body: JSON.stringify(partialData)
+            });
+            if (!response) return;
+
+            const result = await response.json();
+            if (response.ok && result.status === "success") {
+                const savedTrip = result.data;
+                const updateList = (prev) => prev.map((t) => (t.id === savedTrip.id ? savedTrip : t));
+                if (section === "visiting") setVisitingTrips(updateList);
+                else if (section === "upcoming") setUpcomingTrips(updateList);
+                else if (section === "visited") setVisitedTrips(updateList);
+            } else {
+                addToast(result.message || "Failed to update trip", "error");
+            }
+        } catch (error) {
+            console.error("Partial update error:", error);
+            addToast("Failed to update trip due to network error", "error");
+        }
     };
 
     const handleTripUpdate = async (updatedTrip, oldSection, newSection) => {
@@ -702,6 +728,7 @@ export default function DashboardPage() {
                 trip={selectedTrip}
                 section={selectedSection}
                 onUpdate={handleTripUpdate}
+                onPartialUpdate={handleTripPartialUpdate}
                 onDelete={handleTripDelete}
             />
             <div className="mt-16" />
@@ -709,6 +736,9 @@ export default function DashboardPage() {
             <div className="flex items-center justify-center w-full">
                 <Footer />
             </div>
+
+            {/* AI Chat Widget */}
+            <ChatWidget />
         </div>
     );
 }

@@ -1,0 +1,109 @@
+
+> self-planning-react@0.0.0 lint
+> eslint .
+
+
+/home/saoly/Documents/Code/WebDev/REACT/self-planning-react/src/components/TripDetailModal.jsx
+   38:29  error  'tripName' is defined but never used. Allowed unused args must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    no-unused-vars
+  118:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  116 |             const defaults = getDefaultTripData(trip.name);
+  117 |
+> 118 |             setFormData({
+      |             ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  119 |                 name: trip.name || "",
+  120 |                 image: trip.image || "",
+  121 |                 startDate: trip.startDate || "",  react-hooks/set-state-in-effect
+
+/home/saoly/Documents/Code/WebDev/REACT/self-planning-react/src/context/AuthContext.jsx
+  13:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  11 |     const savedUser = localStorage.getItem("user");
+  12 |     if (savedUser && token) {
+> 13 |       setUser(JSON.parse(savedUser));
+     |       ^^^^^^^ Avoid calling setState() directly within an effect
+  14 |     } else {
+  15 |       localStorage.removeItem("user");
+  16 |       localStorage.removeItem("token");  react-hooks/set-state-in-effect
+
+/home/saoly/Documents/Code/WebDev/REACT/self-planning-react/src/context/ToastContext.jsx
+  12:26  error    Error: Cannot access variable before it is declared
+
+`removeToast` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  10 |         const id = crypto.randomUUID();
+  11 |         setToasts((prev) => [...prev, { id, message, type }]);
+> 12 |         setTimeout(() => removeToast(id), 3000);
+     |                          ^^^^^^^^^^^ `removeToast` accessed before it is declared
+  13 |     }, []);
+  14 |
+  15 |     const removeToast = useCallback((id) => {
+
+  13 |     }, []);
+  14 |
+> 15 |     const removeToast = useCallback((id) => {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 16 |         setToasts((prev) => prev.filter((t) => t.id !== id));
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 17 |     }, []);
+     | ^^^^^^^^^^^^ `removeToast` is declared here
+  18 |
+  19 |     return (
+  20 |         <ToastContext.Provider value={{ addToast }}>  react-hooks/immutability
+  13:8   warning  React Hook useCallback has a missing dependency: 'removeToast'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            react-hooks/exhaustive-deps
+  15:37  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. This value was memoized in source but not in compilation output.
+
+  13 |     }, []);
+  14 |
+> 15 |     const removeToast = useCallback((id) => {
+     |                                     ^^^^^^^^^
+> 16 |         setToasts((prev) => prev.filter((t) => t.id !== id));
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 17 |     }, []);
+     | ^^^^^^ Could not preserve existing memoization
+  18 |
+  19 |     return (
+  20 |         <ToastContext.Provider value={{ addToast }}>                                                                                                                                                                                                                                                                                      react-hooks/preserve-manual-memoization
+
+/home/saoly/Documents/Code/WebDev/REACT/self-planning-react/src/pages/DashboardPage.jsx
+    9:7   error    'initialVisitingTrips' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           no-unused-vars
+   39:7   error    'initialUpcomingTrips' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           no-unused-vars
+   78:7   error    'initialVisitedTrips' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            no-unused-vars
+  469:18  error    'error' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              no-unused-vars
+  478:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  476 |
+  477 |     useEffect(() => {
+> 478 |         fetchTrips();
+      |         ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  479 |     }, [token]);
+  480 |
+  481 |  react-hooks/set-state-in-effect
+  479:8   warning  React Hook useEffect has a missing dependency: 'fetchTrips'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-hooks/exhaustive-deps
+  557:18  error    'error' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              no-unused-vars
+  579:18  error    'error' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              no-unused-vars
+  627:18  error    'error' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              no-unused-vars
+  667:18  error    'error' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              no-unused-vars
+
+✖ 16 problems (14 errors, 2 warnings)
+

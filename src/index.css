@@ -89,4 +89,46 @@ body {
   animation: progress-bar 3s linear forwards;
 }
 
-
+/* Markdown Typography */
+.prose h1, .prose h2, .prose h3 {
+  font-weight: 600;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+.prose h1 { font-size: 1.25em; }
+.prose h2 { font-size: 1.15em; }
+.prose h3 { font-size: 1.05em; }
+.prose p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+.prose ul {
+  list-style-type: disc;
+  padding-left: 1.25em;
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+.prose ol {
+  list-style-type: decimal;
+  padding-left: 1.25em;
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+.prose li {
+  margin-top: 0.15em;
+  margin-bottom: 0.15em;
+}
+.prose strong {
+  font-weight: 600;
+}
+.prose a {
+  color: var(--color-primary-blue);
+  text-decoration: underline;
+}
+.prose code {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.1em 0.3em;
+  border-radius: 0.25em;
+  font-family: monospace;
+  font-size: 0.9em;
+}

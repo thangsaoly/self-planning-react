@@ -28,7 +28,7 @@ app.get("/", (req, res) => {
 app.use("/api", apiRouter);
 
 // Fallback error handler for undefined routes
-app.use((req, res, next) => {
+app.use((req, res, _next) => {
   res.status(404).json({
     status: "error",
     message: `Route ${req.originalUrl} not found`
@@ -36,7 +36,7 @@ app.use((req, res, next) => {
 });
 
 // Global error handler
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error(err.stack);
   res.status(500).json({
     status: "error",
@@ -49,7 +49,7 @@ sequelize.authenticate()
   .then(() => {
     console.log("Database connection has been established successfully.");
     // Sync models
-    return sequelize.sync({ alter: true });
+    return sequelize.sync();
   })
   .then(() => {
     console.log("Database tables synchronized successfully.");

@@ -68,7 +68,7 @@ const getDefaultTripData = (tripName) => ({
     ],
 });
 
-export default function TripDetailModal({ isOpen, onClose, trip, section, onUpdate, onDelete }) {
+export default function TripDetailModal({ isOpen, onClose, trip, section, onUpdate, onPartialUpdate, onDelete }) {
     const [formData, setFormData] = useState({
         name: "",
         image: "",
@@ -147,6 +147,17 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
         }
     }, [trip, section, isOpen]);
 
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
+        }
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [isOpen]);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -177,11 +188,7 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
 
         // Auto-save when toggling in view mode
         if (!isEditing) {
-            const updatedTrip = {
-                ...trip,
-                itinerary: newDays,
-            };
-            onUpdate(updatedTrip, section, section);
+            onPartialUpdate(trip.id, section, { itinerary: newDays });
         }
     };
 
@@ -217,11 +224,7 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
 
             // Auto-save when toggling in view mode
             if (!isEditing) {
-                const updatedTrip = {
-                    ...trip,
-                    todos: newTodos,
-                };
-                onUpdate(updatedTrip, section, section);
+                onPartialUpdate(trip.id, section, { todos: newTodos });
             }
 
             return newTodos;
@@ -260,11 +263,7 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
 
             // Auto-save when toggling in view mode
             if (!isEditing) {
-                const updatedTrip = {
-                    ...trip,
-                    packing: newPacking,
-                };
-                onUpdate(updatedTrip, section, section);
+                onPartialUpdate(trip.id, section, { packing: newPacking });
             }
 
             return newPacking;

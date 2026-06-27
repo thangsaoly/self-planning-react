@@ -66,6 +66,16 @@ Recognizing that travel planners are used in all kinds of connectivity condition
 - **Optimistic UI** — deletes and updates are reflected instantly in the UI without waiting for the server, with automatic rollback if the server rejects the operation.
 - **Offline Indicator** — the NavBar displays a subtle animated "Offline (N pending)" badge whenever the user is disconnected, keeping them informed without interrupting the experience.
 
+## Phase 6: AI Integration & Final Polish (Completed)
+**Lead Architect & Developer:** Thang Saoly
+
+To truly modernize the platform and offer unparalleled user value, the final phase involved integrating generative AI:
+- **AI Assistant Integration:** Connected the OpenRouter API to build "Pisey", an intelligent, context-aware chatbot that reads directly from the user's database to offer personalized travel planning and budget analysis.
+- **Graceful Fallbacks:** Engineered error handling to ensure AI availability drops do not break the UI.
+- **Full-Stack Finalization:** Stabilized linting, optimized the Vite build pipeline, and thoroughly documented the platform architecture.
+
+This final phase transformed the project from a simple web application into a complete, scalable, and intelligent Software-as-a-Service (SaaS) architecture.
+
 ---
 
-*This project stands as a testament to the power of iterative development. By consistently evaluating our tools and being willing to refactor, we have built an application that is not only useful for travelers but also serves as a comprehensive portfolio of our growth as web developers.*
+*This project stands as a testament to the power of iterative development and sheer dedication. By consistently evaluating our tools and being willing to rewrite and refactor, Thang Saoly has successfully elevated this application from a basic Term 1 assignment into an impressive, enterprise-grade portfolio piece.*
