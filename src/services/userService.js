@@ -69,3 +69,43 @@ export async function changePassword(token, passwordData) {
     return { success: false, error: "Network error" };
   }
 }
+
+/**
+ * Authenticate user & get token.
+ */
+export async function login(email, password) {
+  try {
+    const response = await fetch(`${BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const result = await response.json();
+    if (response.ok && result.status === "success") {
+      return { success: true, data: result.data };
+    }
+    return { success: false, error: result.message || "Login failed" };
+  } catch (error) {
+    return { success: false, error: "Network error" };
+  }
+}
+
+/**
+ * Register a new user.
+ */
+export async function signup(fullname, email, password) {
+  try {
+    const response = await fetch(`${BASE_URL}/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fullname, email, password }),
+    });
+    const result = await response.json();
+    if (response.ok && result.status === "success") {
+      return { success: true, data: result.data };
+    }
+    return { success: false, error: result.message || "Registration failed" };
+  } catch (error) {
+    return { success: false, error: "Network error" };
+  }
+}

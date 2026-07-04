@@ -470,21 +470,20 @@ export default function DashboardPage() {
 
     const handleTripPartialUpdate = async (tripId, section, partialData) => {
         try {
-            const response = await authenticatedFetch(`/api/trips/${tripId}`, {
-                method: "PUT",
-                body: JSON.stringify(partialData)
-            });
-            if (!response) return;
-
-            const result = await response.json();
-            if (response.ok && result.status === "success") {
+            const result = await tripService.updateTrip(token, tripId, partialData);
+            if (result.unauthorized) {
+                logout();
+                addToast("Session expired, please log in again", "error");
+                return;
+            }
+            if (result.success) {
                 const savedTrip = result.data;
                 const updateList = (prev) => prev.map((t) => (t.id === savedTrip.id ? savedTrip : t));
                 if (section === "visiting") setVisitingTrips(updateList);
                 else if (section === "upcoming") setUpcomingTrips(updateList);
                 else if (section === "visited") setVisitedTrips(updateList);
             } else {
-                addToast(result.message || "Failed to update trip", "error");
+                addToast(result.error || "Failed to update trip", "error");
             }
         } catch (error) {
             console.error("Partial update error:", error);

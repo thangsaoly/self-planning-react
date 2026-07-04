@@ -1,4 +1,5 @@
 import { createContext, useState, useContext, useEffect } from "react";
+import * as userService from "../services/userService";
 
 const AuthContext = createContext(null);
 
@@ -21,52 +22,28 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = async (email, password) => {
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.status === "success") {
-        setUser(result.data.user);
-        setToken(result.data.token);
-        localStorage.setItem("user", JSON.stringify(result.data.user));
-        localStorage.setItem("token", result.data.token);
-        return { success: true };
-      } else {
-        return { success: false, error: result.message || "Login failed" };
-      }
-    } catch (err) {
-      console.error("Login API Error:", err);
-      return { success: false, error: "Network error, please try again" };
+    const result = await userService.login(email, password);
+    if (result.success) {
+      setUser(result.data.user);
+      setToken(result.data.token);
+      localStorage.setItem("user", JSON.stringify(result.data.user));
+      localStorage.setItem("token", result.data.token);
+      return { success: true };
+    } else {
+      return { success: false, error: result.error || "Login failed" };
     }
   };
 
   const signup = async (fullname, email, password) => {
-    try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullname, email, password }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.status === "success") {
-        setUser(result.data.user);
-        setToken(result.data.token);
-        localStorage.setItem("user", JSON.stringify(result.data.user));
-        localStorage.setItem("token", result.data.token);
-        return { success: true };
-      } else {
-        return { success: false, error: result.message || "Registration failed" };
-      }
-    } catch (err) {
-      console.error("Signup API Error:", err);
-      return { success: false, error: "Network error, please try again" };
+    const result = await userService.signup(fullname, email, password);
+    if (result.success) {
+      setUser(result.data.user);
+      setToken(result.data.token);
+      localStorage.setItem("user", JSON.stringify(result.data.user));
+      localStorage.setItem("token", result.data.token);
+      return { success: true };
+    } else {
+      return { success: false, error: result.error || "Registration failed" };
     }
   };
 

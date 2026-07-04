@@ -35,7 +35,7 @@ const travelTypeEmojis = {
 };
 
 // Default data structure for a new trip
-const getDefaultTripData = (tripName) => ({
+const getDefaultTripData = () => ({
     booking: {
         departure: "Departure Airport - Date TBD",
         arrival: "Arrival Airport - Date TBD",
@@ -113,7 +113,7 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
     // Initialize form with trip data when modal opens
     useEffect(() => {
         if (trip && isOpen) {
-            const defaults = getDefaultTripData(trip.name);
+            const defaults = getDefaultTripData();
 
             setFormData({
                 name: trip.name || "",
