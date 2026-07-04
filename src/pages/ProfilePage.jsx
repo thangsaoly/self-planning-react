@@ -6,7 +6,7 @@ import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 
 export default function ProfilePage() {
-  const { token, user: authUser } = useAuth();
+  const { token, updateUser, logout } = useAuth();
   const { addToast } = useToast();
   
   const [profile, setProfile] = useState({
@@ -33,6 +33,11 @@ export default function ProfilePage() {
     const fetchProfile = async () => {
       setIsLoading(true);
       const result = await userService.getProfile(token);
+      if (result.unauthorized) {
+        logout();
+        addToast("Session expired, please log in again", "error");
+        return;
+      }
       if (result.success) {
         setProfile(result.data);
         setEditForm({
@@ -48,14 +53,20 @@ export default function ProfilePage() {
     if (token) {
       fetchProfile();
     }
-  }, [token, addToast]);
+  }, [token, addToast, logout]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     const result = await userService.updateProfile(token, editForm);
+    if (result.unauthorized) {
+      logout();
+      addToast("Session expired, please log in again", "error");
+      return;
+    }
     if (result.success) {
       addToast("Profile updated successfully", "success");
       setProfile({ ...profile, name: result.data.name, email: result.data.email });
+      updateUser({ name: result.data.name, email: result.data.email });
     } else {
       addToast(result.error, "error");
     }
@@ -73,6 +84,11 @@ export default function ProfilePage() {
       newPassword: passwordForm.newPassword,
     });
     
+    if (result.unauthorized) {
+      logout();
+      addToast("Session expired, please log in again", "error");
+      return;
+    }
     if (result.success) {
       addToast("Password changed successfully", "success");
       setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });

@@ -49,7 +49,7 @@ sequelize.authenticate()
   .then(() => {
     console.log("Database connection has been established successfully.");
     // Sync models
-    return sequelize.sync();
+    return sequelize.sync({ alter: true });
   })
   .then(() => {
     console.log("Database tables synchronized successfully.");

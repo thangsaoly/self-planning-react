@@ -20,6 +20,7 @@ export async function getProfile(token) {
     const response = await fetch(`${BASE_URL}/user/profile`, {
       headers: headers(token),
     });
+    if (response.status === 401) return { success: false, unauthorized: true };
     const result = await response.json();
     if (response.ok && result.status === "success") {
       return { success: true, data: result.data };
@@ -40,6 +41,7 @@ export async function updateProfile(token, profileData) {
       headers: headers(token),
       body: JSON.stringify(profileData),
     });
+    if (response.status === 401) return { success: false, unauthorized: true };
     const result = await response.json();
     if (response.ok && result.status === "success") {
       return { success: true, data: result.data };
@@ -60,6 +62,7 @@ export async function changePassword(token, passwordData) {
       headers: headers(token),
       body: JSON.stringify(passwordData),
     });
+    if (response.status === 401) return { success: false, unauthorized: true };
     const result = await response.json();
     if (response.ok && result.status === "success") {
       return { success: true };
