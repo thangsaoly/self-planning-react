@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -8,6 +8,12 @@ export default function NavBar({ onLoginClick, onSignupClick, isOnline = true, p
     const { user, logout } = useAuth();
     const { addToast } = useToast();
     const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    // Auto-close mobile menu whenever the route changes
+    useEffect(() => {
+        setIsMobileMenuOpen(false);
+    }, [pathname]);
 
     const handleLogoutClick = () => {
         setIsLogoutConfirmOpen(true);
@@ -18,110 +24,220 @@ export default function NavBar({ onLoginClick, onSignupClick, isOnline = true, p
     const isDashboard = pathname.startsWith("/dashboard");
 
     const showProfile = !!user;
-    const userName = user ? user.name : "User";
+    const userName = user?.name || user?.fullname || "User";
 
     const baseLinkClasses =
-        "text-[color:var(--color-text-primary)] no-underline hover:bg-[color:var(--color-white-alpha-10)] rounded-md p-1 transition-all";
+        "text-[color:var(--color-text-primary)] no-underline hover:bg-[color:var(--color-white-alpha-10)] rounded-md px-3 py-1.5 text-sm font-medium transition-all whitespace-nowrap";
 
-    const homeClasses = `${baseLinkClasses} ${isHome ? "text-[color:var(--color-primary-blue)] font-semibold" : ""
-        }`;
+    const mobileLinkClasses =
+        "text-[color:var(--color-text-primary)] no-underline hover:bg-[color:var(--color-white-alpha-10)] rounded-lg px-3 py-2 text-sm font-medium transition-all w-full flex items-center";
 
-    const aboutClasses = `${baseLinkClasses} ${isAbout ? "text-[color:var(--color-primary-blue)] font-semibold" : ""
-        }`;
-
-    const dashboardClasses = `${baseLinkClasses} ${isDashboard ? "text-[color:var(--color-primary-blue)] font-semibold" : ""
-        }`;
+    const getLinkClass = (isActive, isMobile = false) => {
+        const base = isMobile ? mobileLinkClasses : baseLinkClasses;
+        return `${base} ${isActive ? "text-[color:var(--color-primary-blue)] font-semibold bg-[color:var(--color-white-alpha-10)]" : ""}`;
+    };
 
     return (
         <>
-            <header className="col-start-1 row-start-1 w-[95%] fixed top-5 mx-auto transition-all duration-500 z-[100] display-flex items-center justify-center">
-                <nav className="flex flex-col lg:flex-row justify-between bg-[color:var(--color-bg-overlay)] rounded-[10px] px-2 lg:px-4 py-2 shadow-[var(--shadow-sm)] backdrop-blur-sm">
-                    <div className="logo w-full lg:w-auto flex justify-between items-center">
-                        <Link to="/">
-                            <img src="/img/Self-Planning-Logo.png" alt="logo" className="h-12" />
-                        </Link>
-                        {/* mobile menu icons can be wired later */}
-                    </div>
-                    <div className="link w-full lg:flex-1 flex flex-col lg:flex-row items-center gap-4 lg:gap-0">
-                        <ul className="flex flex-col lg:flex-row gap-0.5 lg:gap-12 w-full lg:w-auto lg:mx-auto">
-                            <li className="flex flex-row gap-5 justify-center lg:justify-center">
-                                <Link to="/" className={homeClasses}>
-                                    Home
+            <header className="fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 w-[95%] max-w-6xl z-[100] transition-all duration-300">
+                <nav className="bg-[color:var(--color-bg-overlay)] rounded-xl px-3 sm:px-5 py-2 sm:py-2.5 shadow-[var(--shadow-sm)] backdrop-blur-md border border-white/10">
+                    {/* Top Row: Logo, desktop nav, desktop actions, and mobile hamburger */}
+                    <div className="flex items-center justify-between w-full">
+                        {/* Logo */}
+                        <div className="flex items-center shrink-0">
+                            <Link to="/" className="flex items-center" onClick={() => setIsMobileMenuOpen(false)}>
+                                <img
+                                    src="/img/Self-Planning-Logo.png"
+                                    alt="Self-Planning Logo"
+                                    className="h-8 sm:h-10 md:h-11 w-auto object-contain"
+                                />
+                            </Link>
+                        </div>
+
+                        {/* Desktop Navigation Links */}
+                        <div className="hidden lg:flex items-center gap-2 xl:gap-4 mx-auto">
+                            <Link to="/" className={getLinkClass(isHome)}>
+                                Home
+                            </Link>
+                            {user && (
+                                <Link to="/dashboard" className={getLinkClass(isDashboard)}>
+                                    Dashboard
                                 </Link>
-                                {user && (
-                                    <Link to="/dashboard" className={dashboardClasses}>
-                                        Dashboard
-                                    </Link>
-                                )}
-                                <Link to="/about" className={aboutClasses}>
-                                    About
-                                </Link>
-                                <a
-                                    href="/#features"
-                                    className={baseLinkClasses}
-                                >
-                                    Feature
-                                </a>
-                                <a
-                                    href="/#Contact"
-                                    className={baseLinkClasses}
-                                >
-                                    Contact
-                                </a>
-                            </li>
-                        </ul>
-                        <div className="log-sign flex flex-col lg:flex-row gap-2.5 w-full lg:w-auto items-center">
-                            {/* Offline indicator pill */}
+                            )}
+                            <Link to="/about" className={getLinkClass(isAbout)}>
+                                About
+                            </Link>
+                            <a href="/#features" className={baseLinkClasses}>
+                                Feature
+                            </a>
+                            <a href="/#Contact" className={baseLinkClasses}>
+                                Contact
+                            </a>
+                        </div>
+
+                        {/* Desktop Profile / Auth Section */}
+                        <div className="hidden lg:flex items-center gap-3 shrink-0">
+                            {/* Offline indicator */}
                             {!isOnline && (
                                 <div
                                     id="navbar-offline-badge"
-                                    className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-medium transition-all duration-300"
+                                    className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-medium"
                                 >
                                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                                    <span>Offline{pendingCount > 0 ? ` (${pendingCount} pending)` : ""}</span>
+                                    <span>Offline{pendingCount > 0 ? ` (${pendingCount})` : ""}</span>
                                 </div>
                             )}
+
                             {showProfile ? (
-                                /* Profile section when logged in */
-                                <div className="profile flex items-center gap-3 px-3 py-1.5 bg-[color:var(--color-bg-card)] rounded-full">
-                                    <div className="avatar w-8 h-8 rounded-full bg-[color:var(--color-primary-blue)] flex items-center justify-center text-white font-semibold text-sm">
+                                <div className="flex items-center gap-2.5 px-3 py-1 bg-[color:var(--color-bg-card)] rounded-full border border-white/5">
+                                    <div className="w-7 h-7 rounded-full bg-[color:var(--color-primary-blue)] flex items-center justify-center text-white font-semibold text-xs shrink-0">
                                         {userName.charAt(0).toUpperCase()}
                                     </div>
-                                    <span className="text-[color:var(--color-text-primary)] text-sm font-medium">
+                                    <span className="text-[color:var(--color-text-primary)] text-sm font-medium max-w-[130px] truncate">
                                         {userName}
                                     </span>
-                                    <Link to="/profile" className="text-[color:var(--color-text-secondary)] hover:text-[color:var(--color-primary-blue)] transition-colors cursor-pointer" title="Profile">
-                                        <i className="fi fi-rr-user" />
+                                    <Link
+                                        to="/profile"
+                                        className="text-[color:var(--color-text-secondary)] hover:text-[color:var(--color-primary-blue)] transition-colors p-1"
+                                        title="Profile"
+                                    >
+                                        <i className="fi fi-rr-user text-sm flex items-center" />
                                     </Link>
-                                    <button onClick={handleLogoutClick} className="text-[color:var(--color-text-secondary)] hover:text-red-500 transition-colors cursor-pointer" title="Log Out">
-                                        <i className="fi fi-rr-sign-out-alt" />
+                                    <button
+                                        type="button"
+                                        onClick={handleLogoutClick}
+                                        className="text-[color:var(--color-text-secondary)] hover:text-red-500 transition-colors p-1 cursor-pointer"
+                                        title="Log Out"
+                                    >
+                                        <i className="fi fi-rr-sign-out-alt text-sm flex items-center" />
                                     </button>
                                 </div>
                             ) : (
-                                /* Login/Signup buttons when not logged in */
-                                <>
-                                    <div className="w-full lg:w-auto">
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={onLoginClick}
+                                        className="bg-[color:var(--color-primary-blue)] text-[color:var(--color-text-primary)] text-sm font-medium py-1.5 px-3.5 rounded-lg border border-[color:var(--color-primary-blue)] cursor-pointer transition-all hover:opacity-90"
+                                    >
+                                        Log in
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={onSignupClick}
+                                        className="bg-transparent text-[color:var(--color-text-primary)] text-sm font-medium py-1.5 px-3.5 rounded-lg border border-[color:var(--color-border-primary)] hover:border-[color:var(--color-primary-blue)] cursor-pointer transition-all hover:bg-[color:var(--color-white-alpha-10)]"
+                                    >
+                                        Sign up
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Mobile Actions: Offline badge + Hamburger button */}
+                        <div className="flex lg:hidden items-center gap-2">
+                            {!isOnline && (
+                                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" title="Offline" />
+                            )}
+                            <button
+                                type="button"
+                                aria-label="Toggle navigation menu"
+                                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                                className="p-2 rounded-lg text-[color:var(--color-text-primary)] hover:bg-[color:var(--color-white-alpha-10)] transition-colors cursor-pointer flex items-center justify-center"
+                            >
+                                {isMobileMenuOpen ? (
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                ) : (
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                    </svg>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Mobile Dropdown Menu */}
+                    {isMobileMenuOpen && (
+                        <div className="lg:hidden mt-3 pt-3 border-t border-white/10 flex flex-col gap-1.5 animate-fade-in">
+                            <Link to="/" className={getLinkClass(isHome, true)} onClick={() => setIsMobileMenuOpen(false)}>
+                                Home
+                            </Link>
+                            {user && (
+                                <Link to="/dashboard" className={getLinkClass(isDashboard, true)} onClick={() => setIsMobileMenuOpen(false)}>
+                                    Dashboard
+                                </Link>
+                            )}
+                            <Link to="/about" className={getLinkClass(isAbout, true)} onClick={() => setIsMobileMenuOpen(false)}>
+                                About
+                            </Link>
+                            <a href="/#features" className={mobileLinkClasses} onClick={() => setIsMobileMenuOpen(false)}>
+                                Feature
+                            </a>
+                            <a href="/#Contact" className={mobileLinkClasses} onClick={() => setIsMobileMenuOpen(false)}>
+                                Contact
+                            </a>
+
+                            {/* Mobile Profile / Auth Buttons */}
+                            <div className="pt-2 mt-1 border-t border-white/5">
+                                {showProfile ? (
+                                    <div className="flex items-center justify-between p-2 rounded-lg bg-[color:var(--color-bg-card)]">
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                            <div className="w-8 h-8 rounded-full bg-[color:var(--color-primary-blue)] flex items-center justify-center text-white font-semibold text-xs shrink-0">
+                                                {userName.charAt(0).toUpperCase()}
+                                            </div>
+                                            <span className="text-[color:var(--color-text-primary)] text-sm font-medium truncate">
+                                                {userName}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-1 shrink-0">
+                                            <Link
+                                                to="/profile"
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                                className="p-2 text-[color:var(--color-text-secondary)] hover:text-[color:var(--color-primary-blue)] transition-colors"
+                                                title="Profile"
+                                            >
+                                                <i className="fi fi-rr-user text-base flex items-center" />
+                                            </Link>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setIsMobileMenuOpen(false);
+                                                    handleLogoutClick();
+                                                }}
+                                                className="p-2 text-[color:var(--color-text-secondary)] hover:text-red-500 transition-colors cursor-pointer"
+                                                title="Log Out"
+                                            >
+                                                <i className="fi fi-rr-sign-out-alt text-base flex items-center" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col gap-2 pt-1">
                                         <button
                                             type="button"
-                                            onClick={onLoginClick}
-                                            className="w-full bg-[color:var(--color-primary-blue)] text-[color:var(--color-text-primary)] text-[length:var(--font-size-h4)] py-1.5 px-2.5 rounded-[10px] border border-[color:var(--color-primary-blue)] cursor-pointer transition-all duration-500 hover:bg-[color:var(--color-primary-blue-alpha-80)] hover:border-[color:var(--color-primary-blue-alpha-80)] hover:translate-y-1"
+                                            onClick={() => {
+                                                setIsMobileMenuOpen(false);
+                                                onLoginClick?.();
+                                            }}
+                                            className="w-full bg-[color:var(--color-primary-blue)] text-[color:var(--color-text-primary)] text-sm font-medium py-2 px-3 rounded-lg border border-[color:var(--color-primary-blue)] cursor-pointer"
                                         >
                                             Log in
                                         </button>
-                                    </div>
-                                    <div className="w-full lg:w-auto">
                                         <button
                                             type="button"
-                                            onClick={onSignupClick}
-                                            className="w-full bg-[color:var(--color-primary-blue)] text-[color:var(--color-text-primary)] text-[length:var(--font-size-h4)] py-1.5 px-2.5 rounded-[10px] border border-[color:var(--color-primary-blue)] cursor-pointer transition-all duration-500 hover:bg-[color:var(--color-primary-blue-alpha-80)] hover:border-[color:var(--color-primary-blue-alpha-80)] hover:translate-y-1"
+                                            onClick={() => {
+                                                setIsMobileMenuOpen(false);
+                                                onSignupClick?.();
+                                            }}
+                                            className="w-full bg-transparent text-[color:var(--color-text-primary)] text-sm font-medium py-2 px-3 rounded-lg border border-[color:var(--color-border-primary)] cursor-pointer"
                                         >
                                             Sign up
                                         </button>
                                     </div>
-                                </>
-                            )}
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </nav>
             </header>
 
