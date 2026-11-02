@@ -118,6 +118,28 @@
   --shadow-inset: inset 0px 0px 20px 20px rgba(25, 25, 25, 0.1);
   --text-shadow-default: 0px 4px 4px rgba(0, 0, 0, 0.125);
   --text-shadow-strong: 0px 4px 4px var(--color-black-alpha-25);
+
+  /* ========================================
+     MOTION/FX TOKENS (UI refresh)
+     ======================================== */
+  --color-focus-ring: rgba(81, 162, 255, 0.6);
+  --color-card-ring: rgba(21, 93, 252, 0.45);
+  --color-drag-tint: rgba(81, 162, 255, 0.08);
+  --color-shimmer-highlight: rgba(255, 255, 255, 0.07);
+  --gradient-hero-scrim: linear-gradient(180deg, transparent 0%, rgba(25, 25, 25, 0.35) 55%, var(--color-bg-primary) 100%);
+  --gradient-cover-scrim: linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, transparent 40%, rgba(0, 0, 0, 0.45) 100%);
+  --gradient-text-blue: linear-gradient(90deg, var(--color-primary-blue), var(--color-primary-blue-light));
+
+  /* ========================================
+     LANDING AMBIANCE (soft glow orbs + layered elevations)
+     ======================================== */
+  --color-orb-blue: rgba(21, 93, 252, 0.16);
+  --color-orb-accent: rgba(255, 112, 67, 0.1);
+  --color-glow-accent: rgba(255, 112, 67, 0.3);
+  --color-card-ring-accent: rgba(255, 112, 67, 0.45);
+  --shadow-cta: 0 10px 25px -8px rgba(21, 93, 252, 0.55);
+  --shadow-cta-hover: 0 0 28px var(--color-glow-accent), 0 14px 30px -10px rgba(255, 112, 67, 0.45);
+  --shadow-card-hover: 0 24px 48px -12px rgba(0, 0, 0, 0.5), 0 0 32px -8px var(--color-glow-accent);
 }
 
 /* ========================================

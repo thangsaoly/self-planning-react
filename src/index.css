@@ -132,3 +132,181 @@ body {
   font-family: monospace;
   font-size: 0.9em;
 }
+
+/* ==========================================================================
+   UI REFRESH FOUNDATION (tokens in src/styles/colors.css, hook in
+   src/hooks/useReveal.jsx). Consumed by Dashboard, TripDetailModal, Landing.
+
+   Collapse pattern — pure Tailwind, documented here (no class needed):
+     outer: className={expanded
+       ? 'grid grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-out'
+       : 'grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out'}
+     inner: className='min-h-0 overflow-hidden'  (content stays mounted)
+   ========================================================================== */
+
+/* Global focus ring for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Reduced-motion kill-switch: neutralize all animations/transitions app-wide */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Skeleton shimmer sweep (dashboard loading placeholders) */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-bg-card);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-shimmer-highlight) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-position: 200% 0;
+  animation: shimmer 1.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Gentle vertical float (decorative icons / hero image) */
+@keyframes float {
+  0%,
+  100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Scroll-reveal fade-up, staggered via style { "--i": n } (see useReveal.jsx).
+   Hidden state lives ONLY inside no-preference so content is never invisible
+   when motion is reduced or JS fails. */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 0.5s ease,
+      transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: calc(var(--i, 0) * 70ms);
+  }
+
+  .reveal.revealed {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Numeric inputs: hide the tiny spinner arrows — amounts are typed via
+   keyboard, not scrolled/spun. Keeps `<input type=number>` native numeric
+   keypad on mobile; pair with onWheel blur to stop scroll-to-increment. */
+input[type="number"].no-spin::-webkit-outer-spin-button,
+input[type="number"].no-spin::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"].no-spin {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Overlay scrims (position relative parent required) */
+.scrim-hero {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--gradient-hero-scrim);
+}
+
+.scrim-cover {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--gradient-cover-scrim);
+}
+
+/* Gradient headline text (landing headline only) */
+.text-gradient-blue {
+  background: var(--gradient-text-blue);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Custom checkbox for todo/packing/itinerary (keeps native input + onChange) */
+.trip-check {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  border: 1.5px solid var(--color-border-input);
+  border-radius: 0.25rem;
+  background: var(--color-checkbox-bg);
+  cursor: pointer;
+  vertical-align: middle;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.trip-check:checked {
+  background-color: var(--color-primary-blue);
+  border-color: transparent;
+}
+
+.trip-check::after {
+  content: "";
+  position: absolute;
+  top: 0.0625rem;
+  left: 0.3125rem;
+  width: 0.25rem;
+  height: 0.5rem;
+  border: solid var(--color-white);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0.5);
+  opacity: 0;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.trip-check:checked::after {
+  transform: rotate(45deg) scale(1);
+  opacity: 1;
+}
+
+.trip-check:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--color-bg-primary),
+    0 0 0 4px var(--color-focus-ring);
+}

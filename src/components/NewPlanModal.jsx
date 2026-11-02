@@ -175,9 +175,9 @@ export default function NewPlanModal({ isOpen, onClose, onSubmit, targetSection 
 
     const getDayCardClass = (index) => {
         const themes = [
-            "bg-[color:var(--color-planner-day1-bg)]",
-            "bg-[color:var(--color-planner-day2-bg)]",
-            "bg-[color:var(--color-planner-day3-bg)]",
+            "bg-(--color-planner-day1-bg)",
+            "bg-(--color-planner-day2-bg)",
+            "bg-(--color-planner-day3-bg)",
         ];
         return themes[index % 3];
     };
@@ -192,15 +192,15 @@ export default function NewPlanModal({ isOpen, onClose, onSubmit, targetSection 
                 }
             }}
         >
-            <div className="relative w-full max-w-3xl max-h-[90vh] bg-[color:var(--color-bg-primary)] overflow-y-auto rounded-xl shadow-2xl animate-slide-up flex flex-col">
+            <div className="relative w-full max-w-3xl max-h-[90vh] bg-(--color-bg-primary) overflow-y-auto rounded-xl shadow-2xl animate-slide-up flex flex-col">
                 <button
                     onClick={() => { onClose(); setStep(1); }}
-                    className="absolute top-4 right-4 z-50 px-2 py-1 bg-[color:var(--color-bg-secondary)] hover:bg-red-500 hover:text-white rounded-lg transition-colors flex items-center justify-center"
+                    className="absolute top-4 right-4 z-50 px-2 py-1 bg-(--color-bg-secondary) hover:bg-red-500 hover:text-white rounded-lg transition-colors flex items-center justify-center"
                 >
                     <i className="fi fi-rr-cross text-sm" />
                 </button>
 
-                <div className="w-full h-[180px] overflow-hidden relative rounded-t-xl shrink-0">
+                <div className="w-full h-45 overflow-hidden relative rounded-t-xl shrink-0">
                     <img
                         src={
                             formData.heroImageUrl ||
@@ -210,17 +210,17 @@ export default function NewPlanModal({ isOpen, onClose, onSubmit, targetSection 
                         alt="Hero"
                         className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[color:var(--color-bg-primary)] to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-(--color-bg-primary) to-transparent" />
                     
                     <div className="absolute bottom-4 left-6 right-6">
                         <div className="flex justify-between items-end">
-                            <h2 className="text-3xl font-bold text-[color:var(--color-text-primary)]">
+                            <h2 className="text-3xl font-bold text-(--color-text-primary)">
                                 {step === 1 ? "Where to?" : step === 2 ? "Trip Details" : "Plan Itinerary"}
                             </h2>
                             <div className="flex gap-2">
-                                <div className={`w-12 h-1.5 rounded-full ${step >= 1 ? "bg-[color:var(--color-primary-blue)]" : "bg-white/20"}`} />
-                                <div className={`w-12 h-1.5 rounded-full ${step >= 2 ? "bg-[color:var(--color-primary-blue)]" : "bg-white/20"}`} />
-                                <div className={`w-12 h-1.5 rounded-full ${step >= 3 ? "bg-[color:var(--color-primary-blue)]" : "bg-white/20"}`} />
+                                <div className={`w-12 h-1.5 rounded-full ${step >= 1 ? "bg-(--color-primary-blue)" : "bg-white/20"}`} />
+                                <div className={`w-12 h-1.5 rounded-full ${step >= 2 ? "bg-(--color-primary-blue)" : "bg-white/20"}`} />
+                                <div className={`w-12 h-1.5 rounded-full ${step >= 3 ? "bg-(--color-primary-blue)" : "bg-white/20"}`} />
                             </div>
                         </div>
                     </div>
@@ -230,40 +230,40 @@ export default function NewPlanModal({ isOpen, onClose, onSubmit, targetSection 
                     {step === 1 && (
                         <div className="flex flex-col gap-6 animate-fade-in">
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm font-medium text-[color:var(--color-text-secondary)]">Destination Name</label>
+                                <label className="text-sm font-medium text-(--color-text-secondary)">Destination Name</label>
                                 <input
                                     type="text"
                                     name="title"
                                     value={formData.title}
                                     onChange={handleInputChange}
                                     placeholder="e.g. Paris, Tokyo, Bali"
-                                    className="text-2xl font-medium bg-[color:var(--color-bg-secondary)] border border-[color:var(--color-border-primary)] rounded-lg px-4 py-3 outline-none text-[color:var(--color-text-primary)] placeholder:text-[color:var(--color-text-muted)] focus:border-[color:var(--color-primary-blue)] transition-colors"
+                                    className="text-2xl font-medium bg-(--color-bg-secondary) border border-(--color-border-primary) rounded-lg px-4 py-3 outline-none text-(--color-text-primary) placeholder:text-(--color-text-muted) focus:border-(--color-primary-blue) transition-colors"
                                     autoFocus
                                 />
                             </div>
 
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm font-medium text-[color:var(--color-text-secondary)]">Travel Dates (Optional)</label>
+                                <label className="text-sm font-medium text-(--color-text-secondary)">Travel Dates (Optional)</label>
                                 <div className="flex items-center gap-4">
-                                    <div className="flex-1 bg-[color:var(--color-bg-secondary)] border border-[color:var(--color-border-primary)] rounded-lg px-4 py-2 flex items-center gap-3">
-                                        <i className="fi fi-rr-calendar text-[color:var(--color-text-muted)]" />
+                                    <div className="flex-1 bg-(--color-bg-secondary) border border-(--color-border-primary) rounded-lg px-4 py-2 flex items-center gap-3">
+                                        <i className="fi fi-rr-calendar text-(--color-text-muted)" />
                                         <input
                                             type="date"
                                             name="startDate"
                                             value={formData.startDate}
                                             onChange={handleInputChange}
-                                            className="bg-transparent border-none outline-none text-[color:var(--color-text-primary)] w-full"
+                                            className="bg-transparent border-none outline-none text-(--color-text-primary) w-full"
                                         />
                                     </div>
-                                    <span className="text-[color:var(--color-text-muted)]">to</span>
-                                    <div className="flex-1 bg-[color:var(--color-bg-secondary)] border border-[color:var(--color-border-primary)] rounded-lg px-4 py-2 flex items-center gap-3">
-                                        <i className="fi fi-rr-calendar text-[color:var(--color-text-muted)]" />
+                                    <span className="text-(--color-text-muted)">to</span>
+                                    <div className="flex-1 bg-(--color-bg-secondary) border border-(--color-border-primary) rounded-lg px-4 py-2 flex items-center gap-3">
+                                        <i className="fi fi-rr-calendar text-(--color-text-muted)" />
                                         <input
                                             type="date"
                                             name="endDate"
                                             value={formData.endDate}
                                             onChange={handleInputChange}
-                                            className="bg-transparent border-none outline-none text-[color:var(--color-text-primary)] w-full"
+                                            className="bg-transparent border-none outline-none text-(--color-text-primary) w-full"
                                         />
                                     </div>
                                 </div>
@@ -275,12 +275,12 @@ export default function NewPlanModal({ isOpen, onClose, onSubmit, targetSection 
                         <div className="flex flex-col gap-6 animate-fade-in">
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-medium text-[color:var(--color-text-secondary)]">Travel Status</label>
+                                    <label className="text-sm font-medium text-(--color-text-secondary)">Travel Status</label>
                                     <select
                                         name="travelStatus"
                                         value={formData.travelStatus}
                                         onChange={handleInputChange}
-                                        className="w-full bg-[color:var(--color-bg-secondary)] border border-[color:var(--color-border-primary)] rounded-lg px-4 py-3 outline-none text-[color:var(--color-text-primary)] focus:border-[color:var(--color-primary-blue)] transition-colors"
+                                        className="w-full bg-(--color-bg-secondary) border border-(--color-border-primary) rounded-lg px-4 py-3 outline-none text-(--color-text-primary) focus:border-(--color-primary-blue) transition-colors"
                                     >
                                         {travelStatusOptions.map((opt) => (
                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -288,12 +288,12 @@ export default function NewPlanModal({ isOpen, onClose, onSubmit, targetSection 
                                     </select>
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-medium text-[color:var(--color-text-secondary)]">Travel Type</label>
+                                    <label className="text-sm font-medium text-(--color-text-secondary)">Travel Type</label>
                                     <select
                                         name="travelType"
                                         value={formData.travelType}
                                         onChange={handleInputChange}
-                                        className="w-full bg-[color:var(--color-bg-secondary)] border border-[color:var(--color-border-primary)] rounded-lg px-4 py-3 outline-none text-[color:var(--color-text-primary)] focus:border-[color:var(--color-primary-blue)] transition-colors"
+                                        className="w-full bg-(--color-bg-secondary) border border-(--color-border-primary) rounded-lg px-4 py-3 outline-none text-(--color-text-primary) focus:border-(--color-primary-blue) transition-colors"
                                     >
                                         <option value="" disabled>Select type</option>
                                         {travelTypeOptions.map((opt) => (
@@ -304,23 +304,23 @@ export default function NewPlanModal({ isOpen, onClose, onSubmit, targetSection 
                             </div>
 
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm font-medium text-[color:var(--color-text-secondary)]">Custom Image URL (Optional)</label>
-                                <div className="flex items-center gap-3 bg-[color:var(--color-bg-secondary)] border border-[color:var(--color-border-primary)] rounded-lg px-4 py-3 focus-within:border-[color:var(--color-primary-blue)] transition-colors">
-                                    <i className="fi fi-rr-picture text-[color:var(--color-text-muted)]" />
+                                <label className="text-sm font-medium text-(--color-text-secondary)">Custom Image URL (Optional)</label>
+                                <div className="flex items-center gap-3 bg-(--color-bg-secondary) border border-(--color-border-primary) rounded-lg px-4 py-3 focus-within:border-(--color-primary-blue) transition-colors">
+                                    <i className="fi fi-rr-picture text-(--color-text-muted)" />
                                     <input
                                         type="url"
                                         name="heroImageUrl"
                                         value={formData.heroImageUrl}
                                         onChange={handleInputChange}
                                         placeholder="Leave empty to use a default image based on travel type"
-                                        className="flex-1 bg-transparent border-none outline-none text-[color:var(--color-text-primary)] placeholder:text-[color:var(--color-text-muted)]"
+                                        className="flex-1 bg-transparent border-none outline-none text-(--color-text-primary) placeholder:text-(--color-text-muted)"
                                     />
                                 </div>
                             </div>
                             
                             {/* Image Grid Suggestion */}
                             {formData.travelType && !formData.heroImageUrl && (
-                                <div className="text-xs text-[color:var(--color-text-muted)]">
+                                <div className="text-xs text-(--color-text-muted)">
                                     Using default image for {formData.travelType}.
                                 </div>
                             )}
@@ -329,10 +329,10 @@ export default function NewPlanModal({ isOpen, onClose, onSubmit, targetSection 
 
                     {step === 3 && (
                         <div className="flex flex-col gap-4 animate-fade-in flex-1">
-                            <p className="text-sm text-[color:var(--color-text-secondary)]">Let's build a rough itinerary. You can always edit this later.</p>
+                            <p className="text-sm text-(--color-text-secondary)">Let's build a rough itinerary. You can always edit this later.</p>
                             <div className="flex gap-4 overflow-x-auto pb-4 pt-2">
                                 {days.map((day, dayIndex) => (
-                                    <div key={dayIndex} className={`flex-shrink-0 w-[240px] rounded-xl p-4 shadow-sm border border-white/10 ${getDayCardClass(dayIndex)}`}>
+                                    <div key={dayIndex} className={`shrink-0 w-60 rounded-xl p-4 shadow-sm border border-white/10 ${getDayCardClass(dayIndex)}`}>
                                         <div className="flex justify-between items-center mb-4">
                                             <span className="inline-block px-3 py-1 rounded-md bg-white/20 text-sm font-medium">
                                                 Day {day.day}
@@ -352,7 +352,7 @@ export default function NewPlanModal({ isOpen, onClose, onSubmit, targetSection 
                                                         value={activity.title}
                                                         onChange={(e) => handleActivityChange(dayIndex, actIndex, e.target.value)}
                                                         placeholder="Add activity..."
-                                                        className="bg-transparent border-none outline-none flex-1 text-sm text-[color:var(--color-text-primary)] placeholder:text-white/40"
+                                                        className="bg-transparent border-none outline-none flex-1 text-sm text-(--color-text-primary) placeholder:text-white/40"
                                                     />
                                                     {day.activities.length > 1 && (
                                                         <button type="button" onClick={() => removeActivity(dayIndex, actIndex)} className="text-white/40 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -368,7 +368,7 @@ export default function NewPlanModal({ isOpen, onClose, onSubmit, targetSection 
                                     </div>
                                 ))}
 
-                                <div onClick={addDay} className="flex-shrink-0 w-[240px] rounded-xl border-2 border-dashed border-[color:var(--color-border-primary)] flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-[color:var(--color-bg-secondary)] hover:border-[color:var(--color-primary-blue)] transition-colors text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary-blue)]">
+                                <div onClick={addDay} className="shrink-0 w-60 rounded-xl border-2 border-dashed border-(--color-border-primary) flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-(--color-bg-secondary) hover:border-(--color-primary-blue) transition-colors text-(--color-text-muted) hover:text-(--color-primary-blue)">
                                     <i className="fi fi-rr-plus text-2xl flex items-center" />
                                     <span className="font-medium">Add Day</span>
                                 </div>
@@ -376,14 +376,14 @@ export default function NewPlanModal({ isOpen, onClose, onSubmit, targetSection 
                         </div>
                     )}
 
-                    <div className="flex justify-between items-center mt-auto pt-4 border-t border-[color:var(--color-border-secondary)]">
+                    <div className="flex justify-between items-center mt-auto pt-4 border-t border-(--color-border-secondary)">
                         {step > 1 ? (
-                            <button type="button" onClick={handleBack} className="px-6 py-2.5 text-[color:var(--color-text-secondary)] hover:text-[color:var(--color-text-primary)] hover:bg-[color:var(--color-bg-secondary)] rounded-lg font-medium transition-colors">
+                            <button type="button" onClick={handleBack} className="px-6 py-2.5 text-(--color-text-secondary) hover:text-(--color-text-primary) hover:bg-(--color-bg-secondary) rounded-lg font-medium transition-colors">
                                 Back
                             </button>
                         ) : <div />}
                         
-                        <button type="submit" disabled={isSubmitting} className="px-8 py-2.5 bg-[color:var(--color-primary-blue)] hover:bg-[color:var(--color-primary-blue-light)] text-white font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2">
+                        <button type="submit" disabled={isSubmitting} className="px-8 py-2.5 bg-(--color-primary-blue) hover:bg-(--color-primary-blue-light) text-white font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2">
                             {step < 3 ? "Next" : (isSubmitting ? "Creating..." : "Create Plan")}
                             {step < 3 && <i className="fi fi-rr-arrow-small-right flex items-center" />}
                         </button>

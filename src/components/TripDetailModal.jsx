@@ -34,6 +34,18 @@ const travelTypeEmojis = {
     Hiking: "⛰️",
 };
 
+// Anchor TOC entries — key matches trip-section-{key} wrapper ids in the main column
+const tocEntries = [
+    { key: "itinerary", label: "Itinerary" },
+    { key: "booking", label: "Booking" },
+    { key: "transport", label: "Transport" },
+    { key: "map", label: "Map" },
+    { key: "todo", label: "To Do's" },
+    { key: "highlights", label: "Highlights" },
+    { key: "packing", label: "Packing" },
+    { key: "costs", label: "Costs" },
+];
+
 // Default data structure for a new trip
 const getDefaultTripData = () => ({
     booking: {
@@ -105,7 +117,9 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
         map: true,
         highlights: true,
         packing: true,
-        costs: true
+        costs: true,
+        itinerary: true,
+        todo: true,
     });
 
     const toggleSection = (section) => setExpanded(prev => ({ ...prev, [section]: !prev[section] }));
@@ -288,7 +302,12 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
     };
 
     const updateCost = (index, field, value) => {
-        setCosts((prev) => prev.map((c, i) => (i === index ? { ...c, [field]: field === "amount" ? parseFloat(value) || 0 : value } : c)));
+        setCosts((prev) => prev.map((c, i) => {
+            if (i !== index) return c;
+            if (field !== "amount") return { ...c, [field]: value };
+            // Non-negative amounts only: clamp to 0 (empty/invalid also -> 0)
+            return { ...c, amount: Math.max(0, parseFloat(value) || 0) };
+        }));
     };
 
     const removeCost = (index) => {
@@ -359,31 +378,85 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
             className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="relative w-full h-full bg-[color:var(--color-bg-primary)] overflow-y-auto">
-                {/* Close Button */}
-                <button
-                    onClick={onClose}
-                    className="fixed top-0 right-0 z-50 px-2 py-1 bg-red-600 hover:bg-red-800 rounded-bl-lg transition-colors animate-fade-in"
-                >
-                    <i className="fi fi-rr-cross text-white text-sm" />
-                </button>
+            <div className="relative w-full h-full bg-(--color-bg-primary) overflow-y-auto animate-scale-up">
+                {/* Sticky slim toolbar (lives inside the scroller) */}
+                <div className="sticky top-0 z-[110] flex items-center gap-3 px-4 py-2 bg-[rgba(25,25,25,0.85)] backdrop-blur-md border-b border-(--color-border-secondary)">
+                    {/* Glass-circle close */}
+                    <button
+                        onClick={onClose}
+                        aria-label="Close trip details"
+                        className="rounded-full w-8 h-8 flex items-center justify-center bg-black/40 hover:bg-black/60 ring-1 ring-white/20 backdrop-blur transition-colors"
+                    >
+                        <i className="fi fi-rr-cross text-white text-sm" />
+                    </button>
+                    {/* Emoji chip + truncated name */}
+                    <span className="text-lg" aria-hidden="true">{trip.emoji || "✈️"}</span>
+                    <span className="max-w-[200px] truncate text-(--color-text-primary) font-medium text-sm">
+                        {formData.name || trip.name}
+                    </span>
+                    <div className="flex-1" />
+                    {/* Action buttons — migrated verbatim from TripCover, restyled compact */}
+                    {showDeleteConfirm ? (
+                        <div className="flex items-center gap-2 bg-red-600 p-1.5 rounded-lg animate-fade-in">
+                            <span className="text-white text-sm font-medium px-2">Delete?</span>
+                            <button
+                                onClick={confirmDelete}
+                                className="px-3 py-1 bg-white text-red-600 hover:bg-red-50 rounded font-medium transition-colors text-sm"
+                            >
+                                Yes
+                            </button>
+                            <button
+                                onClick={() => setShowDeleteConfirm(false)}
+                                className="px-3 py-1 bg-red-700 text-white hover:bg-red-800 rounded font-medium transition-colors text-sm"
+                            >
+                                No
+                            </button>
+                        </div>
+                    ) : !isEditing ? (
+                        <>
+                            <button
+                                onClick={() => setIsEditing(true)}
+                                className="px-3 py-1.5 text-sm bg-(--color-primary-blue) hover:bg-(--color-primary-blue-light) text-white rounded-lg transition-colors flex items-center gap-2"
+                            >
+                                <i className="fi fi-rr-pencil" />
+                                Edit
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="px-3 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2"
+                            >
+                                <i className="fi fi-rr-trash" />
+                                Delete
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button
+                                onClick={() => setIsEditing(false)}
+                                className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                disabled={isSaving}
+                                className="px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                            >
+                                {isSaving ? "Saving..." : "Save Changes"}
+                            </button>
+                        </>
+                    )}
+                </div>
 
-                {/* Hero / Cover */}
+                {/* Hero / Cover — presentation only */}
                 <TripCover
                     trip={trip}
                     formData={formData}
                     travelTypeEmojis={travelTypeEmojis}
-                    isEditing={isEditing}
-                    isSaving={isSaving}
-                    showDeleteConfirm={showDeleteConfirm}
-                    setShowDeleteConfirm={setShowDeleteConfirm}
-                    setIsEditing={setIsEditing}
-                    handleSave={handleSave}
-                    handleDelete={handleDelete}
-                    confirmDelete={confirmDelete}
                 />
 
-                {/* Main Content */}
+                {/* Main Content + anchor TOC */}
+                <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_200px] xl:gap-8">
                 <main className="relative mt-10 w-[90%] mx-auto pb-10">
                     {/* Title & Metadata */}
                     <TripMetaSection
@@ -394,12 +467,15 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                         travelTypeOptions={travelTypeOptions}
                     />
 
-                    <hr className="border-t border-[color:var(--color-border-secondary)] my-4" />
+                    <hr className="border-t border-(--color-border-secondary) my-4" />
 
                     {/* Itinerary */}
+                    <div id="trip-section-itinerary" className="scroll-mt-24">
                     <ItinerarySection
                         days={days}
                         isEditing={isEditing}
+                        expanded={expanded.itinerary}
+                        onToggle={() => toggleSection('itinerary')}
                         onActivityChange={handleActivityChange}
                         onToggleActivity={toggleActivityDone}
                         onAddActivity={addActivity}
@@ -407,11 +483,13 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                         onAddDay={addDay}
                         onRemoveDay={removeDay}
                     />
+                    </div>
 
                     {/* Grid Section for other details */}
                     <div className="grid-section grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         {/* Booking Details */}
+                        <div id="trip-section-booking" className="scroll-mt-24">
                         <BookingSection
                             booking={booking}
                             isEditing={isEditing}
@@ -419,8 +497,10 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                             onToggle={() => toggleSection('booking')}
                             onChange={setBooking}
                         />
+                        </div>
 
                         {/* Transport Details */}
+                        <div id="trip-section-transport" className="scroll-mt-24">
                         <TransportSection
                             transport={transport}
                             isEditing={isEditing}
@@ -430,8 +510,10 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                             onUpdate={updateTransport}
                             onRemove={removeTransport}
                         />
+                        </div>
 
                         {/* Google Maps */}
+                        <div id="trip-section-map" className="scroll-mt-24">
                         <GoogleMapsSection
                             googleMapsLink={googleMapsLink}
                             isEditing={isEditing}
@@ -439,20 +521,26 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                             onToggle={() => toggleSection('map')}
                             onChange={setGoogleMapsLink}
                         />
+                        </div>
 
                         {/* To Do's */}
+                        <div id="trip-section-todo" className="scroll-mt-24">
                         <TodoSection
                             todos={todos}
                             todoNote={todoNote}
                             isEditing={isEditing}
-                            onToggle={toggleTodo}
+                            expanded={expanded.todo}
+                            onToggle={() => toggleSection('todo')}
+                            onToggleItem={toggleTodo}
                             onAdd={addTodo}
                             onUpdate={updateTodo}
                             onRemove={removeTodo}
                             onNoteChange={setTodoNote}
                         />
+                        </div>
 
                         {/* Travel Highlights */}
+                        <div id="trip-section-highlights" className="scroll-mt-24">
                         <HighlightsSection
                             highlights={highlights}
                             highlightNote={highlightNote}
@@ -464,8 +552,10 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                             onRemove={removeHighlight}
                             onNoteChange={setHighlightNote}
                         />
+                        </div>
 
                         {/* Packing List */}
+                        <div id="trip-section-packing" className="scroll-mt-24">
                         <PackingSection
                             packing={packing}
                             packingNote={packingNote}
@@ -478,8 +568,10 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                             onToggleItem={togglePacking}
                             onNoteChange={setPackingNote}
                         />
+                        </div>
 
                         {/* Travel Costs */}
+                        <div id="trip-section-costs" className="scroll-mt-24">
                         <CostsSection
                             costs={costs}
                             costNote={costNote}
@@ -491,8 +583,26 @@ export default function TripDetailModal({ isOpen, onClose, trip, section, onUpda
                             onRemove={removeCost}
                             onNoteChange={setCostNote}
                         />
+                        </div>
                     </div>
                 </main>
+
+                {/* Anchor TOC — xl only, plain hrefs, zero JS */}
+                <aside className="hidden xl:block">
+                    <nav aria-label="Trip sections" className="sticky top-16 self-start py-10 pl-2">
+                        <p className="text-xs font-medium text-(--color-text-muted) mb-2">On this page</p>
+                        {tocEntries.map((entry) => (
+                            <a
+                                key={entry.key}
+                                href={`#trip-section-${entry.key}`}
+                                className="block py-1 text-sm text-(--color-text-secondary) hover:text-(--color-primary-blue) transition-colors"
+                            >
+                                {entry.label}
+                            </a>
+                        ))}
+                    </nav>
+                </aside>
+                </div>
             </div>
         </div>
     );

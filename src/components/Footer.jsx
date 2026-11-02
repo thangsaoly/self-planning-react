@@ -21,11 +21,29 @@ export default function Footer() {
                     id="Contact"
                 >
                     <div className="so-me flex flex-col items-center gap-2">
-                        <h3 className="text-[color:var(--color-text-primary)] font-semibold">Follow us on:</h3>
+                        <h3 className="text-(--color-text-primary) font-semibold">Follow us on:</h3>
                         <div className="icon flex gap-1">
-                            <i className="fi fi-brands-facebook text-5xl m-1.5 cursor-pointer" />
+                            <a
+                                href="https://web.facebook.com/profile.php?id=61595772407242"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="Self-Planning Travel Planner on Facebook (facebook.com/profile.php?id=61595772407242)"
+                                title="Facebook — Self-Planning Travel Planner"
+                                className="text-(--color-facebook) hover:text-(--color-primary-blue-light) transition-colors duration-300"
+                            >
+                                <i className="fi fi-brands-facebook text-5xl m-1.5 cursor-pointer" />
+                            </a>
                             <i className="fi fi-brands-telegram text-5xl m-1.5 cursor-pointer" />
-                            <i className="fi fi-brands-github text-5xl m-1.5 cursor-pointer" />
+                            <a
+                                href="https://github.com/thangsaoly/self-planning-react"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="Self-Planning Travel Planner on GitHub (github.com/thangsaoly/self-planning-react)"
+                                title="GitHub — thangsaoly/self-planning-react"
+                                className="text-(--color-github) hover:text-(--color-primary-blue-light) transition-colors duration-300"
+                            >
+                                <i className="fi fi-brands-github text-5xl m-1.5 cursor-pointer" />
+                            </a>
                         </div>
                     </div>
                     <div className="link">
@@ -33,7 +51,7 @@ export default function Footer() {
                             <li>
                                 <Link
                                     to="/"
-                                    className="text-[color:var(--color-text-primary)] no-underline"
+                                    className="text-(--color-text-primary) no-underline"
                                 >
                                     Home
                                 </Link>
@@ -41,18 +59,18 @@ export default function Footer() {
                             <li>
                                 <Link
                                     to="/about"
-                                    className="text-[color:var(--color-text-primary)] no-underline"
+                                    className="text-(--color-text-primary) no-underline"
                                 >
                                     About
                                 </Link>
                             </li>
                             <li>
-                                <a href={featureHref} className="text-[color:var(--color-text-primary)] no-underline">
+                                <a href={featureHref} className="text-(--color-text-primary) no-underline">
                                     Feature
                                 </a>
                             </li>
                             <li>
-                                <a href={contactHref} className="text-[color:var(--color-text-primary)] no-underline">
+                                <a href={contactHref} className="text-(--color-text-primary) no-underline">
                                     Contact
                                 </a>
                             </li>
@@ -67,7 +85,7 @@ export default function Footer() {
                     </div>
                 </div>
                 <div className="copy-right text-center mb-2">
-                    <p className="text-[color:var(--color-text-secondary)]">
+                    <p className="text-(--color-text-secondary)">
                         © 2025 Self-Planning, All rights reserved.
                     </p>
                 </div>

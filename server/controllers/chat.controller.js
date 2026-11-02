@@ -59,7 +59,9 @@ ${contextData || "The user currently has no trips planned. Encourage them to cre
       },
       body: JSON.stringify({
         model: "openrouter/free",
-        max_tokens: 400,
+        // Budget for full itineraries: 400 truncated multi-day answers
+        // mid-sentence (itineraries routinely need 600-900 output tokens).
+        max_tokens: 1024,
         messages: apiMessages,
       })
     });

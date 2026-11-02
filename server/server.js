@@ -48,8 +48,12 @@ app.use((err, req, res, _next) => {
 sequelize.authenticate()
   .then(() => {
     console.log("Database connection has been established successfully.");
-    // Sync models
-    return sequelize.sync({ alter: true });
+    // Sync models (create-if-missing only). `alter: true` was removed: on SQLite it
+    // rewrites tables via positional `INSERT INTO <table>_backup SELECT ...` copies,
+    // and a stale `users_backup` left by an interrupted migration made every startup
+    // crash with "NOT NULL constraint failed: users_backup.createdAt". Run explicit
+    // migrations when model columns actually change.
+    return sequelize.sync();
   })
   .then(() => {
     console.log("Database tables synchronized successfully.");

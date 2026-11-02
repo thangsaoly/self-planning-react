@@ -5,10 +5,10 @@ export default function TripMetaSection({
     travelStatusOptions,
     travelTypeOptions
 }) {
-    const inputClasses = "w-full px-3 py-2 rounded bg-[color:var(--color-bg-secondary)] border-none text-[color:var(--color-text-primary)] outline-none placeholder:text-[color:var(--color-text-muted)]";
+    const inputClasses = "w-full px-3 py-2 rounded bg-(--color-bg-secondary) border-none text-(--color-text-primary) outline-none placeholder:text-(--color-text-muted)";
 
     return (
-        <section className="title-section sticky top-0 z-[100] bg-[color:var(--color-bg-primary)] pt-4 pb-4 mb-6 shadow-[0_4px_6px_-6px_rgba(0,0,0,0.1)]">
+        <section className="title-section sticky top-12 z-[100] bg-(--color-bg-primary) pt-4 pb-4 mb-6 border-b border-(--color-border-secondary)">
             <div className="flex justify-between items-end">
                 <div className="flex-1">
                     {isEditing ? (
@@ -18,10 +18,10 @@ export default function TripMetaSection({
                             value={formData.name}
                             onChange={handleInputChange}
                             placeholder="Destination name"
-                            className="text-[length:var(--font-size-h1)] font-bold bg-transparent border-b border-[color:var(--color-border-primary)] outline-none w-full text-[color:var(--color-text-primary)] placeholder:text-[color:var(--color-text-muted)]"
+                            className="text-(length:--font-size-h1) font-bold bg-transparent border-b border-(--color-border-primary) outline-none w-full text-(--color-text-primary) placeholder:text-(--color-text-muted)"
                         />
                     ) : (
-                        <h1 className="text-[length:var(--font-size-h1)] font-bold text-[color:var(--color-text-primary)] leading-tight">
+                        <h1 className="text-(length:--font-size-h1) font-bold text-(--color-text-primary) leading-tight">
                             {formData.name}
                         </h1>
                     )}
@@ -33,7 +33,7 @@ export default function TripMetaSection({
                 {/* Travel Date */}
                 <div className="meta-item flex items-center gap-3 text-sm">
                     <img src="https://cdn-icons-png.flaticon.com/128/3652/3652267.png" alt="calendar" className="w-8 h-8" />
-                    <span className="font-medium w-28 text-[color:var(--color-text-secondary)]">Travel Date</span>
+                    <span className="font-medium w-28 text-(--color-text-secondary)">Travel Date</span>
                     {isEditing ? (
                         <div className="flex flex-wrap items-center gap-2">
                             <input 
@@ -43,7 +43,7 @@ export default function TripMetaSection({
                                 onChange={handleInputChange} 
                                 className={inputClasses + " w-auto"} 
                             />
-                            <span className="text-[color:var(--color-text-muted)]">-</span>
+                            <span className="text-(--color-text-muted)">-</span>
                             <input 
                                 type="date" 
                                 name="endDate" 
@@ -53,7 +53,7 @@ export default function TripMetaSection({
                             />
                         </div>
                     ) : (
-                        <span className="text-[color:var(--color-text-muted)]">
+                        <span className="text-(--color-text-muted)">
                             {formData.startDate && formData.endDate ? `${formData.startDate} - ${formData.endDate}` : "Not set"}
                         </span>
                     )}
@@ -62,7 +62,7 @@ export default function TripMetaSection({
                 {/* Travel Status */}
                 <div className="meta-item flex items-center gap-3 text-sm">
                     <img src="https://cdn-icons-png.flaticon.com/128/17438/17438463.png" alt="status" className="w-8 h-8" />
-                    <span className="font-medium w-28 text-[color:var(--color-text-secondary)]">Travel Status</span>
+                    <span className="font-medium w-28 text-(--color-text-secondary)">Travel Status</span>
                     {isEditing ? (
                         <select 
                             name="travelStatus" 
@@ -75,14 +75,14 @@ export default function TripMetaSection({
                             ))}
                         </select>
                     ) : (
-                        <span className="text-[color:var(--color-text-muted)] capitalize">{formData.travelStatus}</span>
+                        <span className="text-(--color-text-muted) capitalize">{formData.travelStatus}</span>
                     )}
                 </div>
 
                 {/* Travel Type */}
                 <div className="meta-item flex items-center gap-3 text-sm">
                     <img src="https://cdn-icons-png.flaticon.com/128/3308/3308315.png" alt="type" className="w-8 h-8" />
-                    <span className="font-medium w-28 text-[color:var(--color-text-secondary)]">Travel Type</span>
+                    <span className="font-medium w-28 text-(--color-text-secondary)">Travel Type</span>
                     {isEditing ? (
                         <select 
                             name="travelType" 
@@ -96,7 +96,7 @@ export default function TripMetaSection({
                             ))}
                         </select>
                     ) : (
-                        <span className="text-[color:var(--color-text-muted)]">{formData.travelType || "Not set"}</span>
+                        <span className="text-(--color-text-muted)">{formData.travelType || "Not set"}</span>
                     )}
                 </div>
 
@@ -104,7 +104,7 @@ export default function TripMetaSection({
                 {isEditing && (
                     <div className="meta-item flex items-center gap-3 text-sm">
                         <img src="https://cdn-icons-png.flaticon.com/128/1375/1375106.png" alt="image" className="w-8 h-8" />
-                        <span className="font-medium w-28 text-[color:var(--color-text-secondary)]">Image URL</span>
+                        <span className="font-medium w-28 text-(--color-text-secondary)">Image URL</span>
                         <input 
                             type="url" 
                             name="image" 

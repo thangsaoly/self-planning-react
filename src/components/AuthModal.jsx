@@ -97,10 +97,10 @@ export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
 
     const isLogin = mode === "login";
 
-    const inputClasses = "w-full p-3 pl-10 pr-10 bg-[color:var(--color-input-bg)] border border-[color:var(--color-input-border)] text-[color:var(--color-text-primary)] rounded-md text-[length:var(--font-size-sm)] placeholder:text-[color:var(--color-text-secondary)] focus:outline-none focus:border-[color:var(--color-primary-blue)] transition-colors";
-    const labelClasses = "block text-sm font-light text-[color:var(--color-text-primary)] mb-2";
-    const iconClasses = "fi absolute top-[42px] left-3 text-[color:var(--color-text-secondary)] pointer-events-none flex items-center";
-    const btnPrimaryClasses = "w-full p-3 rounded-md font-medium bg-[color:var(--color-primary-blue)] text-[color:var(--color-text-primary)] cursor-pointer border-none transition-all hover:bg-[color:var(--color-primary-blue-alpha-80)] disabled:opacity-50 disabled:cursor-not-allowed";
+    const inputClasses = "w-full p-3 pl-10 pr-10 bg-(--color-input-bg) border border-(--color-input-border) text-(--color-text-primary) rounded-md text-(length:--font-size-sm) placeholder:text-(--color-text-secondary) focus:outline-none focus:border-(--color-primary-blue) transition-colors";
+    const labelClasses = "block text-sm font-light text-(--color-text-primary) mb-2";
+    const iconClasses = "fi absolute top-[42px] left-3 text-(--color-text-secondary) pointer-events-none flex items-center";
+    const btnPrimaryClasses = "w-full p-3 rounded-md font-medium bg-(--color-primary-blue) text-(--color-text-primary) cursor-pointer border-none transition-all hover:bg-(--color-primary-blue-alpha-80) disabled:opacity-50 disabled:cursor-not-allowed";
 
     return (
         <div
@@ -108,20 +108,20 @@ export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
             aria-hidden={!isOpen}
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="w-full max-w-[768px] h-auto flex flex-col lg:flex-row justify-center items-stretch rounded-[12px] border border-[color:var(--color-border-primary)] shadow-[var(--shadow-lg)] bg-[color:var(--color-bg-primary)] overflow-hidden">
+            <div className="w-full max-w-[768px] h-auto flex flex-col lg:flex-row justify-center items-stretch rounded-[12px] border border-(--color-border-primary) shadow-(--shadow-lg) bg-(--color-bg-primary) overflow-hidden">
                 {/* Left gradient panel (desktop only) */}
-                <div className="hidden lg:flex w-96 min-h-[576px] rounded-l-[10px] border-r border-[color:var(--color-border-primary)] p-10 flex-col justify-center items-start bg-gradient-to-br from-[color:var(--color-gradient-auth-start)] to-[color:var(--color-gradient-auth-end)]">
+                <div className="hidden lg:flex w-96 min-h-[576px] rounded-l-[10px] border-r border-(--color-border-primary) p-10 flex-col justify-center items-start bg-gradient-to-br from-(--color-gradient-auth-start) to-(--color-gradient-auth-end)">
                     <div className="flex flex-col justify-center items-start gap-4">
-                        <div className="flex justify-center items-center h-16 w-16 rounded-lg bg-[color:var(--color-white-alpha-20)] text-3xl text-[color:var(--color-text-primary)] mb-4">
+                        <div className="flex justify-center items-center h-16 w-16 rounded-lg bg-(--color-white-alpha-20) text-3xl text-(--color-text-primary) mb-4">
                             <i className="fi fi-rr-lock flex items-center justify-center" />
                         </div>
                         <div>
-                            <h2 className="text-[color:var(--color-text-primary)] text-3xl font-bold leading-tight">
+                            <h2 className="text-(--color-text-primary) text-3xl font-bold leading-tight">
                                 Welcome to Our Platform
                             </h2>
                         </div>
                         <div>
-                            <p className="text-base text-[color:var(--color-white-alpha-80)] leading-relaxed">
+                            <p className="text-base text-(--color-white-alpha-80) leading-relaxed">
                                 Join thousands of users who trust our secure and seamless authentication experience.
                             </p>
                         </div>
@@ -129,7 +129,7 @@ export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
                 </div>
 
                 {/* Right form section */}
-                <div className="relative flex flex-col justify-start bg-[color:var(--color-bg-primary)] w-full lg:w-96 min-h-[500px] lg:min-h-[576px]">
+                <div className="relative flex flex-col justify-start bg-(--color-bg-primary) w-full lg:w-96 min-h-[500px] lg:min-h-[576px]">
                     {/* Close button */}
                     <button
                         type="button"
@@ -144,8 +144,8 @@ export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
                         /* LOGIN FORM */
                         <div className="flex flex-col h-full">
                             <div className="p-8 pb-4">
-                                <h3 className="text-[color:var(--color-text-primary)] text-2xl font-semibold">Log In</h3>
-                                <p className="text-[length:var(--font-size-sm)] text-[color:var(--color-text-secondary)] mt-1">
+                                <h3 className="text-(--color-text-primary) text-2xl font-semibold">Log In</h3>
+                                <p className="text-(length:--font-size-sm) text-(--color-text-secondary) mt-1">
                                     Enter your credentials to access your account.
                                 </p>
                             </div>
@@ -193,7 +193,7 @@ export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
                                         <button
                                             type="button"
                                             onClick={() => setShowLoginPassword(!showLoginPassword)}
-                                            className="absolute top-[42px] right-3 text-[color:var(--color-text-secondary)] hover:text-[color:var(--color-text-primary)] transition-colors"
+                                            className="absolute top-[42px] right-3 text-(--color-text-secondary) hover:text-(--color-text-primary) transition-colors"
                                             aria-label={showLoginPassword ? "Hide password" : "Show password"}
                                         >
                                             <i className={`fi ${showLoginPassword ? "fi-rr-eye-crossed" : "fi-rr-eye"} flex items-center`} />
@@ -203,7 +203,7 @@ export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
                                     <div className="text-right">
                                         <button
                                             type="button"
-                                            className="text-[length:var(--font-size-sm)] text-[color:var(--color-primary-blue-light)] hover:underline"
+                                            className="text-(length:--font-size-sm) text-(--color-primary-blue-light) hover:underline"
                                         >
                                             Forgot password?
                                         </button>
@@ -223,11 +223,11 @@ export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
                             </div>
 
                             <div className="px-8 pt-4">
-                                <p className="text-center text-sm text-[color:var(--color-text-secondary)]">
+                                <p className="text-center text-sm text-(--color-text-secondary)">
                                     Don't have an account?{" "}
                                     <button
                                         type="button"
-                                        className="text-[color:var(--color-primary-blue)] hover:underline font-medium"
+                                        className="text-(--color-primary-blue) hover:underline font-medium"
                                         onClick={() => handleSwitchMode("signup")}
                                     >
                                         Sign Up
@@ -236,9 +236,9 @@ export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
                             </div>
 
                             <div className="px-8 pt-4 flex items-center gap-3">
-                                <div className="flex-grow h-px bg-[color:var(--color-border-primary)]" />
-                                <span className="text-[length:var(--font-size-sm)] text-[color:var(--color-text-muted)]">or continue with</span>
-                                <div className="flex-grow h-px bg-[color:var(--color-border-primary)]" />
+                                <div className="flex-grow h-px bg-(--color-border-primary)" />
+                                <span className="text-(length:--font-size-sm) text-(--color-text-muted)">or continue with</span>
+                                <div className="flex-grow h-px bg-(--color-border-primary)" />
                             </div>
 
                             <div className="p-8 pt-4">
@@ -265,8 +265,8 @@ export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
                         /* SIGNUP FORM */
                         <div className="flex flex-col h-full">
                             <div className="p-8 pb-4">
-                                <h3 className="text-[color:var(--color-text-primary)] text-2xl font-semibold">Create your account</h3>
-                                <p className="text-[length:var(--font-size-sm)] text-[color:var(--color-text-secondary)] mt-1">
+                                <h3 className="text-(--color-text-primary) text-2xl font-semibold">Create your account</h3>
+                                <p className="text-(length:--font-size-sm) text-(--color-text-secondary) mt-1">
                                     Fill in your details to get started.
                                 </p>
                             </div>
@@ -331,12 +331,12 @@ export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
                                         <button
                                             type="button"
                                             onClick={() => setShowSignupPassword(!showSignupPassword)}
-                                            className="absolute top-[42px] right-3 text-[color:var(--color-text-secondary)] hover:text-[color:var(--color-text-primary)] transition-colors"
+                                            className="absolute top-[42px] right-3 text-(--color-text-secondary) hover:text-(--color-text-primary) transition-colors"
                                             aria-label={showSignupPassword ? "Hide password" : "Show password"}
                                         >
                                             <i className={`fi ${showSignupPassword ? "fi-rr-eye-crossed" : "fi-rr-eye"} flex items-center`} />
                                         </button>
-                                        <p className="text-xs text-[color:var(--color-text-muted)] mt-1">
+                                        <p className="text-xs text-(--color-text-muted) mt-1">
                                             Must be at least 6 characters
                                         </p>
                                     </div>
@@ -355,11 +355,11 @@ export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
                             </div>
 
                             <div className="px-8 pt-4">
-                                <p className="text-center text-sm text-[color:var(--color-text-secondary)]">
+                                <p className="text-center text-sm text-(--color-text-secondary)">
                                     Already have an account?{" "}
                                     <button
                                         type="button"
-                                        className="text-[color:var(--color-primary-blue)] hover:underline font-medium"
+                                        className="text-(--color-primary-blue) hover:underline font-medium"
                                         onClick={() => handleSwitchMode("login")}
                                     >
                                         Log in
@@ -368,9 +368,9 @@ export default function AuthModal({ isOpen, mode, onClose, onSwitchMode }) {
                             </div>
 
                             <div className="px-8 pt-4 flex items-center gap-3">
-                                <div className="flex-grow h-px bg-[color:var(--color-border-primary)]" />
-                                <span className="text-[length:var(--font-size-sm)] text-[color:var(--color-text-muted)]">or continue with</span>
-                                <div className="flex-grow h-px bg-[color:var(--color-border-primary)]" />
+                                <div className="flex-grow h-px bg-(--color-border-primary)" />
+                                <span className="text-(length:--font-size-sm) text-(--color-text-muted)">or continue with</span>
+                                <div className="flex-grow h-px bg-(--color-border-primary)" />
                             </div>
 
                             <div className="p-8 pt-4">
