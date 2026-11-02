@@ -3,6 +3,7 @@ import authRouter from "./auth.routes.js";
 import userRouter from "./user.routes.js";
 import tripRouter from "./trip.routes.js";
 import chatRouter from "./chat.routes.js";
+import { authLimiter, chatLimiter } from "../middleware/rateLimit.js";
 
 const router = express.Router();
 
@@ -18,10 +19,10 @@ router.get("/", (req, res) => {
   });
 });
 
-// Mount modular sub-routers
-router.use("/auth", authRouter);
+// Mount modular sub-routers (heavy endpoints get extra throttling)
+router.use("/auth", authLimiter, authRouter);
 router.use("/user", userRouter);
 router.use("/trips", tripRouter);
-router.use("/chat", chatRouter);
+router.use("/chat", chatLimiter, chatRouter);
 
 export default router;

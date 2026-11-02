@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { config } from "../config/env.js";
 
 export const protect = (req, res, next) => {
   let token;
@@ -12,19 +13,16 @@ export const protect = (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
 
       // Verify token
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET || "super_secret_key_self_planning_travel_planner_2026"
-      );
+      const decoded = jwt.verify(token, config.jwtSecret);
 
       // Attach user details to request
       req.user = { id: decoded.id };
       next();
     } catch (error) {
-      console.error("JWT Verification Error:", error.message);
+      const message = error.name === "TokenExpiredError" ? "Session expired, please log in again" : "Not authorized, token failed";
       return res.status(401).json({
         status: "error",
-        message: "Not authorized, token failed",
+        message,
       });
     }
   }

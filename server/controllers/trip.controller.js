@@ -1,5 +1,17 @@
 import { Trip } from "../models/index.js";
 
+/** Columns a client may write — everything else (id, userId, timestamps)
+    is ignored, closing the mass-assignment hole in create/update. */
+const TRIP_FIELDS = [
+  "name", "image", "startDate", "endDate", "travelStatus", "travelType",
+  "emoji", "googleMapsLink", "todoNote", "highlightNote", "packingNote",
+  "costNote", "booking", "transport", "itinerary", "todos", "highlights",
+  "packing", "costs",
+];
+
+const pickTripFields = (body) =>
+  Object.fromEntries(TRIP_FIELDS.filter((f) => body[f] !== undefined).map((f) => [f, body[f]]));
+
 /**
  * Fetch all user trips.
  * @route   GET /api/trips
@@ -40,17 +52,10 @@ export const getTrips = async (req, res) => {
  */
 export const createTrip = async (req, res) => {
   try {
-    const tripData = {
-      ...req.body,
+    const trip = await Trip.create({
+      ...pickTripFields(req.body),
       userId: req.user.id,
-    };
-
-    // Remove client-generated IDs if any, let Sequelize handle UUID creation
-    if (tripData.id && (tripData.id.startsWith("visiting-") || tripData.id.startsWith("upcoming-") || tripData.id.startsWith("visited-"))) {
-      delete tripData.id;
-    }
-
-    const trip = await Trip.create(tripData);
+    });
 
     res.status(201).json({
       status: "success",
@@ -83,8 +88,8 @@ export const updateTrip = async (req, res) => {
       });
     }
 
-    // Update with req.body fields
-    await trip.update(req.body);
+    // Update allowlisted fields only (client can't touch id/userId/others)
+    await trip.update(pickTripFields(req.body));
 
     res.json({
       status: "success",

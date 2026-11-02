@@ -1,5 +1,9 @@
 import bcrypt from "bcryptjs";
+import { Op } from "sequelize";
 import { User } from "../models/index.js";
+
+const MIN_PASSWORD_LENGTH = 8;
+const isValidEmail = (email) => typeof email === "string" && /^\S+@\S+\.\S+$/.test(email.trim());
 
 /**
  * Get current user profile.
@@ -22,6 +26,7 @@ export const getProfile = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("Get profile error:", error);
     res.status(500).json({ status: "error", message: "Server error" });
   }
 };
@@ -38,15 +43,21 @@ export const updateProfile = async (req, res) => {
       return res.status(404).json({ status: "error", message: "User not found" });
     }
 
-    if (email && email !== user.email) {
-      const emailExists = await User.findOne({ where: { email } });
-      if (emailExists) {
-        return res.status(400).json({ status: "error", message: "Email already in use" });
+    if (email) {
+      const normalized = String(email).trim().toLowerCase();
+      if (!isValidEmail(normalized)) {
+        return res.status(400).json({ status: "error", message: "Please provide a valid email address" });
       }
-      user.email = email;
+      if (normalized !== user.email.toLowerCase()) {
+        const emailExists = await User.findOne({ where: { email: { [Op.like]: normalized } } });
+        if (emailExists) {
+          return res.status(400).json({ status: "error", message: "Email already in use" });
+        }
+      }
+      user.email = normalized;
     }
 
-    if (fullname) user.fullname = fullname;
+    if (fullname) user.fullname = String(fullname).trim();
 
     await user.save();
 
@@ -60,6 +71,10 @@ export const updateProfile = async (req, res) => {
       },
     });
   } catch (error) {
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return res.status(400).json({ status: "error", message: "Email already in use" });
+    }
+    console.error("Update profile error:", error);
     res.status(500).json({ status: "error", message: "Server error" });
   }
 };
@@ -71,9 +86,20 @@ export const updateProfile = async (req, res) => {
 export const changePassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   try {
+    if (typeof newPassword !== "string" || newPassword.length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({
+        status: "error",
+        message: `New password must be at least ${MIN_PASSWORD_LENGTH} characters long`,
+      });
+    }
+
     const user = await User.findByPk(req.user.id);
     if (!user) {
       return res.status(404).json({ status: "error", message: "User not found" });
+    }
+
+    if (typeof oldPassword !== "string") {
+      return res.status(400).json({ status: "error", message: "Old password is required" });
     }
 
     const isMatch = await bcrypt.compare(oldPassword, user.password);
@@ -87,6 +113,7 @@ export const changePassword = async (req, res) => {
 
     res.json({ status: "success", message: "Password updated successfully" });
   } catch (error) {
+    console.error("Change password error:", error);
     res.status(500).json({ status: "error", message: "Server error" });
   }
 };

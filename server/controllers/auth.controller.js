@@ -1,6 +1,11 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { Op } from "sequelize";
 import { User } from "../models/index.js";
+import { config } from "../config/env.js";
+
+const MIN_PASSWORD_LENGTH = 8;
+const isValidEmail = (email) => typeof email === "string" && /^\S+@\S+\.\S+$/.test(email.trim());
 
 /**
  * Generate JWT token.
@@ -8,19 +13,22 @@ import { User } from "../models/index.js";
  * @returns {string} JWT Token
  */
 const generateToken = (id) => {
-  return jwt.sign(
-    { id },
-    process.env.JWT_SECRET || "super_secret_key_self_planning_travel_planner_2026",
-    { expiresIn: "30d" }
-  );
+  return jwt.sign({ id }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
 };
+
+/**
+ * Find a user by email, case-insensitively (SQLite LIKE is ASCII-insensitive,
+ * so legacy mixed-case rows still match lowercase input).
+ */
+const findUserByEmail = (email) =>
+  User.findOne({ where: { email: { [Op.like]: email.trim().toLowerCase() } } });
 
 /**
  * Register a new user.
  * @route   POST /api/auth/signup
  */
 export const signup = async (req, res) => {
-  const { fullname, email, password } = req.body;
+  let { fullname, email, password } = req.body;
 
   if (!fullname || !email || !password) {
     return res.status(400).json({
@@ -29,9 +37,22 @@ export const signup = async (req, res) => {
     });
   }
 
+  fullname = String(fullname).trim();
+  email = String(email).trim().toLowerCase();
+
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ status: "error", message: "Please provide a valid email address" });
+  }
+  if (String(password).length < MIN_PASSWORD_LENGTH) {
+    return res.status(400).json({
+      status: "error",
+      message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`,
+    });
+  }
+
   try {
     // Check if user already exists
-    const userExists = await User.findOne({ where: { email } });
+    const userExists = await findUserByEmail(email);
     if (userExists) {
       return res.status(400).json({
         status: "error",
@@ -43,7 +64,7 @@ export const signup = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
+    // Create user (unique index guards the check-then-create race)
     const user = await User.create({
       fullname,
       email,
@@ -63,6 +84,9 @@ export const signup = async (req, res) => {
       },
     });
   } catch (error) {
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return res.status(400).json({ status: "error", message: "Email is already registered" });
+    }
     console.error("Signup error:", error);
     res.status(500).json({
       status: "error",
@@ -86,8 +110,8 @@ export const login = async (req, res) => {
   }
 
   try {
-    // Find user
-    const user = await User.findOne({ where: { email } });
+    // Find user (normalized + case-insensitive fallback)
+    const user = await findUserByEmail(email);
     if (!user) {
       return res.status(400).json({
         status: "error",
